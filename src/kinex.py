@@ -11,7 +11,6 @@ from enrichment import Enrichment
 class Kinex:
     """
     The class representing a pssm table including the table and methods like scoring and enrichment
-
     Parameters
     ----------
     pssm : pandas.DataFrame
