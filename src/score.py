@@ -20,10 +20,10 @@ class Score:
     promiscuity_index : 
     """
 
-    def __init__(self, sequence: str, columns: list, scores: pd.DataFrame) -> None:
+    def __init__(self, sequence: str, scores: pd.DataFrame) -> None:
         # TODO comment fucntion
         self.sequence = sequence
-        self.columns = columns
+        # self.columns = columns
         self.scores = scores
         self.median_percentile = self.scores["percentile_score"].median()
         # Calculate the median percentile and promiscuity_index
