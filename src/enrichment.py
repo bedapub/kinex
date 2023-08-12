@@ -10,7 +10,7 @@ class Enrichment:
     """
     Enrichment results including all the necessary information for the input sites
 
-    Parameters
+    Attributes
     ----------
     enrichment_table: pandas.DataFrame
         Info

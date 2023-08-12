@@ -2,7 +2,7 @@ import pandas as pd
 
 def get_columns(sequence: str, sequence_format: str = "*", phospho_priming: bool = False) -> list:
     """
-    Makes a list of column names required for the calculation, depending on the inputted sequence.
+    Makes a list of column names required for the calculation depending on the inputted sequence.
 
     Parameters
     ----------
@@ -69,8 +69,7 @@ def get_columns(sequence: str, sequence_format: str = "*", phospho_priming: bool
 
     return sorted(column, key=lambda item: int(item[:-1]))
 
-
-def get_score(sequence: str, sequence_format: str, pssm: pd.DataFrame, phospho_priming: bool = False) -> pd.DataFrame:
+def score(sequence: str, sequence_format: str, pssm: pd.DataFrame, phospho_priming: bool = False) -> pd.DataFrame:
     columns = get_columns(
             sequence, sequence_format, phospho_priming)
     columns.append("kinase")

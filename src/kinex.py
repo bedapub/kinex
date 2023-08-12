@@ -3,7 +3,7 @@ import numpy as np
 import scipy as sc
 
 from input import check_sequence, get_sequence_format
-from scoring import get_score
+from scoring import score
 
 from score import Score
 from enrichment import Enrichment
@@ -18,7 +18,8 @@ logging.basicConfig(
 class Kinex:
     """
     The class representing a pssm table including the table and methods like scoring and enrichment
-    Parameters
+
+    Attributes
     ----------
     pssm : pandas.DataFrame
         Info
@@ -28,7 +29,7 @@ class Kinex:
     Methods
     -------
     get_score : 
-    enrichment : 
+    get_enrichment : 
     """
 
     def __init__(self, pssm: pd.DataFrame, scoring_matrix: pd.DataFrame) -> None:
@@ -65,7 +66,7 @@ class Kinex:
     def scoring_matrix(self, scoring_matrix):
         self._scoring_matrix = scoring_matrix
 
-    def score(self, sequence: str, phospho_priming: bool = False, favorability: bool = False, method: str = 'avg'):
+    def get_score(self, sequence: str, phospho_priming: bool = False, favorability: bool = False, method: str = 'avg'):
         # TODO comment fucntion
         sequence_format = get_sequence_format(sequence)
 
@@ -114,12 +115,12 @@ class Kinex:
             number_of_seq = len(sequence)
             for id in range(number_of_seq):
                 if id == 0:
-                    df = get_score(sequence[id], sequence_format, self.pssm, phospho_priming) / number_of_seq if method == 'avg' else get_score(sequence[id], sequence_format, self.pssm, phospho_priming)
+                    df = score(sequence[id], sequence_format, self.pssm, phospho_priming) / number_of_seq if method == 'avg' else score(sequence[id], sequence_format, self.pssm, phospho_priming)
                 else:
                     if method == 'avg':
-                        df = df.add(get_score(sequence[id], sequence_format, self.pssm, phospho_priming) / number_of_seq)
+                        df = df.add(score(sequence[id], sequence_format, self.pssm, phospho_priming) / number_of_seq)
                     else:
-                        df = pd.concat([df,get_score(sequence[id], sequence_format, self.pssm, phospho_priming)])
+                        df = pd.concat([df,score(sequence[id], sequence_format, self.pssm, phospho_priming)])
                         if method == 'min':
                             df = df.groupby(df.index).min()
                         elif method == 'max':
@@ -128,7 +129,7 @@ class Kinex:
         elif sequence_format == 'central':
             if not check_sequence(sequence, sequence_format):
                 raise ValueError("Invalid sequence")
-            df = get_score(sequence, sequence_format, self.pssm, phospho_priming)
+            df = score(sequence, sequence_format, self.pssm, phospho_priming)
 
         # TODO Add favorability support
         df.insert(1, "log_score", np.log2(df["score"]))
@@ -149,8 +150,9 @@ class Kinex:
         return Score(sequence, df)
     
 
-    def enrichment(self, input_sites: pd.DataFrame, fc_threshold: float = 1.5):
+    def get_enrichment(self, input_sites: pd.DataFrame, fc_threshold: float = 1.5):
         # TODO check input_sites format, make sure there are all necessary columns
+        df = input_sites.copy()
 
         # Empty DataFrame to store the output
         enrichment_table = pd.DataFrame(
@@ -161,40 +163,40 @@ class Kinex:
         regulation_list = []
         failed_sites = []
 
-        for id in range(len(input_sites)):
+        for id in range(len(df)):
             # Get top 15 kinases, check if site is valid
-            logging.debug(f"Scoring {input_sites.iloc[id, 0]} : {id}/{len(input_sites) - 1}")
+            logging.debug(f"Scoring {df.iloc[id, 0]} : {id}/{len(df) - 1}")
             try:
-                top15_kinases = self.score(str(input_sites.iloc[id, 0])).top(15).index
+                top15_kinases = self.get_score(str(df.iloc[id, 0])).top(15).index
             except ValueError:
-                logging.warning(f"Scoring of {input_sites.iloc[id, 0]} failed")
-                failed_sites.append(input_sites.iloc[id, 0])
+                logging.warning(f"Scoring of {df.iloc[id, 0]} failed")
+                failed_sites.append(df.iloc[id, 0])
                 regulation_list.append('failed')
                 continue
             
             regulation = ""
             
             # TODO check data type conversions
-            if float(str(input_sites.iloc[id, 1])) >= fc_threshold:
+            if float(str(df.iloc[id, 1])) >= fc_threshold:
                 regulation = "upregulated"
                 total_upregulated += 1
-            elif float(str(input_sites.iloc[id, 1])) <= -fc_threshold:
+            elif float(str(df.iloc[id, 1])) <= -fc_threshold:
                 regulation = "downregulated"
                 total_downregulated += 1
-            elif float(str(input_sites.iloc[id, 1])) < fc_threshold:
+            elif float(str(df.iloc[id, 1])) < fc_threshold:
                 regulation = "unregulated"
                 total_unregulated += 1
 
             regulation_list.append(regulation)
 
             enrichment_table = pd.concat([enrichment_table, pd.DataFrame(
-                {"kinase": top15_kinases, regulation: np.ones(15)})]).groupby('kinase').sum().reset_index()
+                {"kinase": top15_kinases, regulation: np.ones(len(top15_kinases))})]).groupby('kinase').sum().reset_index()
 
         # upregulated_adjusted_p_value = multipletests(self.enrichment_table["upregulated_p_value"], method="fdr_bh")
         # self.enrichment_table.insert(6, "upregulated_adjusted_p_value", upregulated_adjusted_p_value[1])
 
         # Add regulation column to input_sites table
-        input_sites.insert(2, 'regulation', regulation_list)
+        df.insert(2, 'regulation', regulation_list)
 
 
         # TODO think about background adjustment
@@ -203,4 +205,4 @@ class Kinex:
             total_unregulated = np.min(
                 [total_upregulated, total_downregulated])/2
 
-        return Enrichment(enrichment_table, input_sites, failed_sites, total_upregulated, total_downregulated, total_unregulated)
+        return Enrichment(enrichment_table, df, failed_sites, total_upregulated, total_downregulated, total_unregulated)
