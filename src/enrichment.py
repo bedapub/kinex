@@ -482,7 +482,7 @@ class Enrichment:
                 y="dominant_adjusted_p_value_log10_abs",
                 hover_name=self.enrichment_table.index,
                 color=self.enrichment_table["group"],
-                #             text=self.enrichment_table.index,
+                text=self.enrichment_table.index,
             )
             fig.add_hline(
                 y=1.3,
@@ -501,7 +501,8 @@ class Enrichment:
                 x="dominant_enrichment_value_log2",
                 y="dominant_p_value_log10_abs",
                 hover_name=self.enrichment_table.index,
-                color=self.enrichment_table["group"]
+                color=self.enrichment_table["group"],
+                text=self.enrichment_table.index,
             )
             fig.add_hline(
                 y=1.3,

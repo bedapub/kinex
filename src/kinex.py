@@ -8,6 +8,13 @@ from scoring import get_score
 from score import Score
 from enrichment import Enrichment
 
+import logging
+logging.basicConfig(
+    level=logging.ERROR,
+    format="%(asctime)s %(levelname)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
 class Kinex:
     """
     The class representing a pssm table including the table and methods like scoring and enrichment
@@ -24,7 +31,7 @@ class Kinex:
     enrichment : 
     """
 
-    def __init__(self, pssm: pd.DataFrame, scoring_matrix: pd.DataFrame):
+    def __init__(self, pssm: pd.DataFrame, scoring_matrix: pd.DataFrame) -> None:
         """
         Initializes the instance of the PSSM table
         Parameters
@@ -32,11 +39,16 @@ class Kinex:
         pssm : pandas.DataFrame
             A PSSM table containing scores for each position and Amino Acid
         """
+        logging.debug("Initializing a kinex object")
         self.pssm = pssm
         self.scoring_matrix = scoring_matrix
         # TODO Check the table format
         # TODO Add favorability attribute
+        logging.debug("Kinex object initialized")
 
+    def __repr__(self):
+        return ""
+    
     @property
     def pssm(self):
         return self._pssm
@@ -151,9 +163,11 @@ class Kinex:
 
         for id in range(len(input_sites)):
             # Get top 15 kinases, check if site is valid
+            logging.debug(f"Scoring {input_sites.iloc[id, 0]} : {id}/{len(input_sites) - 1}")
             try:
                 top15_kinases = self.score(str(input_sites.iloc[id, 0])).top(15).index
             except ValueError:
+                logging.warning(f"Scoring of {input_sites.iloc[id, 0]} failed")
                 failed_sites.append(input_sites.iloc[id, 0])
                 regulation_list.append('failed')
                 continue
@@ -161,13 +175,13 @@ class Kinex:
             regulation = ""
             
             # TODO check data type conversions
-            if float(str(input_sites.iloc[id, 1])) > fc_threshold:
+            if float(str(input_sites.iloc[id, 1])) >= fc_threshold:
                 regulation = "upregulated"
                 total_upregulated += 1
-            elif float(str(input_sites.iloc[id, 1])) < -fc_threshold:
+            elif float(str(input_sites.iloc[id, 1])) <= -fc_threshold:
                 regulation = "downregulated"
                 total_downregulated += 1
-            elif float(str(input_sites.iloc[id, 1])) <= fc_threshold:
+            elif float(str(input_sites.iloc[id, 1])) < fc_threshold:
                 regulation = "unregulated"
                 total_unregulated += 1
 
@@ -181,8 +195,9 @@ class Kinex:
 
         # Add regulation column to input_sites table
         input_sites.insert(2, 'regulation', regulation_list)
-        # TODO implement the Enrichment class and return instance of that class
 
+
+        # TODO think about background adjustment
         # Background adjustment
         if total_unregulated == 0:
             total_unregulated = np.min(

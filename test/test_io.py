@@ -1,10 +1,6 @@
 import unittest
-import logging
 
 from src.input import check_sequence, get_sequence_format 
-
-logger = logging.getLogger('__miles_to_km__')
-logger.setLevel(logging.INFO)
 
 class TestIO(unittest.TestCase):
 
