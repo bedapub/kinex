@@ -24,31 +24,19 @@ class Score:
     """
 
     def __init__(self, sequence: str, ranking: pd.DataFrame) -> None:
-        # TODO comment function
         self.sequence = sequence
-        # self.columns = columns
         self.ranking = ranking
         self.median_percentile = self.ranking["percentile_score"].median()
-        # Calculate the median percentile and promiscuity_index
 
     def __repr__ (self):
         return f"Scoring results for {self.sequence}"
     
-    
-    # TODO check attributes format before setting
     @property
     def sequence(self):
         return self._sequence
     @sequence.setter
     def sequence(self, sequence):
         self._sequence = sequence
-
-    @property
-    def columns(self):
-        return self._columns
-    @columns.setter
-    def columns(self, columns):
-        self._columns = columns
 
     @property
     def ranking(self):
