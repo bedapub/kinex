@@ -3,8 +3,8 @@ import pandas as pd
 
 from src.kinex import Kinex
 
-pssm_table = pd.read_csv('test/data/test_pssm_table.csv', index_col=0)
-scoring_matrix = pd.read_csv('test/data/test_scoring_matrix.csv', index_col=0)
+pssm_table = pd.read_csv('tests/data/test_pssm_table.csv', index_col=0)
+scoring_matrix = pd.read_csv('tests/data/test_scoring_matrix.csv', index_col=0)
 
 class TestKinex(unittest.TestCase):
 

@@ -2,8 +2,7 @@ import pandas as pd
 import numpy as np
 import scipy as sc
 
-from input import check_sequence, get_sequence_format
-from scoring import score
+from functions import check_sequence, get_sequence_format, score
 
 from score import Score
 from enrichment import Enrichment
@@ -28,13 +27,14 @@ class Kinex:
 
     Methods
     -------
-    get_score : 
+    get_score :
     get_enrichment : 
     """
 
     def __init__(self, pssm: pd.DataFrame, scoring_matrix: pd.DataFrame) -> None:
         """
         Initializes the instance of the PSSM table
+        
         Parameters
         ----------
         pssm : pandas.DataFrame
@@ -89,7 +89,7 @@ class Kinex:
             # Make the last aminoacid lowercase
             for id in range(num):
                 if not id == num - 1:
-                    sequence[id] = sequence[id][:-1].upper() + sequence[id][-1:].lower()
+                    sequence[id] = sequence[id][:-1] + sequence[id][-1:].lower()
 
             # Make possible sequences 
             for id in range(num - 1):
@@ -192,12 +192,8 @@ class Kinex:
             enrichment_table = pd.concat([enrichment_table, pd.DataFrame(
                 {"kinase": top15_kinases, regulation: np.ones(len(top15_kinases))})]).groupby('kinase').sum().reset_index()
 
-        # upregulated_adjusted_p_value = multipletests(self.enrichment_table["upregulated_p_value"], method="fdr_bh")
-        # self.enrichment_table.insert(6, "upregulated_adjusted_p_value", upregulated_adjusted_p_value[1])
-
         # Add regulation column to input_sites table
         df.insert(2, 'regulation', regulation_list)
-
 
         # TODO think about background adjustment
         # Background adjustment

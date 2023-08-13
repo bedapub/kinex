@@ -1,6 +1,6 @@
 import unittest
 
-from src.input import check_sequence, get_sequence_format 
+from src.functions import check_sequence, get_sequence_format 
 
 class TestIO(unittest.TestCase):
 
