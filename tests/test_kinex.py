@@ -3,21 +3,20 @@ import pandas as pd
 
 from src.kinex import Kinex
 
-pssm_table = pd.read_csv('tests/data/test_pssm_table.csv', index_col=0)
-scoring_matrix = pd.read_csv('tests/data/test_scoring_matrix.csv', index_col=0)
+from tests.data import get_test_input_sites, get_test_pssm, get_test_scoring_matrix
 
 class TestKinex(unittest.TestCase):
 
     def test_scoring(self):
-        kinex = Kinex(pssm=pssm_table, scoring_matrix=scoring_matrix)
+        kinex = Kinex(scoring_matrix=get_test_scoring_matrix(), pssm=get_test_pssm())
         result = kinex.get_score('PSVEPPLs*QETFSDL')
 
         self.assertEqual(len(result.ranking), 2)
         self.assertEqual(len(result.ranking.columns), 3)
     
     def test_enrichment(self):
-        kinex = Kinex(pssm=pssm_table, scoring_matrix=scoring_matrix)
-        input_sites = pd.read_csv('tests/data/test_input_sites.csv')
+        kinex = Kinex(scoring_matrix=get_test_scoring_matrix(), pssm=get_test_pssm())
+        input_sites = get_test_input_sites()
         result = kinex.get_enrichment(input_sites=input_sites)
 
         self.assertEqual(len(result.enrichment_table), 2)

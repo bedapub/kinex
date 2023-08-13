@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import hypergeom
+from scipy.stats import fisher_exact
 
 class Table2x2:
     """Summary of class here.
@@ -59,21 +59,4 @@ class Table2x2:
         return (self.table[0][0] * self.table[1][1] / (self.table[0][1] * self.table[1][0]))
     
     def p_val(self, mode):
-        x = self.table[0][0]
-        M = self.table.sum()
-        n = self.table[0].sum()
-        N = self.table[:, 0].sum()
-        start, end = hypergeom.support(M, n, N)
-        if mode == 'greater':
-            return hypergeom.sf(x - 1, M, n, N)
-        if mode == 'less':
-            return hypergeom.cdf(x, M, n, N)
-        if mode == 'two-sided':
-            pmf = hypergeom.pmf(x, M, n, N)
-            res = 0
-            for x_val in range(start, end + 1):
-                if hypergeom.pmf(x_val, M, n, N) <= pmf:
-                    res += hypergeom.pmf(x_val, M, n, N)
-            return res
-        else:
-            raise ValueError("Wrong mode")
+        return fisher_exact(self.table, alternative=mode).pvalue

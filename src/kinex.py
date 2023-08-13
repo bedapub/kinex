@@ -4,6 +4,8 @@ import scipy as sc
 
 from functions import check_sequence, get_sequence_format, score
 
+from data import get_pssm
+
 from score import Score
 from enrichment import Enrichment
 
@@ -60,7 +62,7 @@ class Kinex:
 
     """
 
-    def __init__(self, pssm: pd.DataFrame, scoring_matrix: pd.DataFrame) -> None:
+    def __init__(self, scoring_matrix: pd.DataFrame, pssm: pd.DataFrame = get_pssm()) -> None:
         """
         Initializes the instance of the Kinex class.
         
@@ -74,6 +76,7 @@ class Kinex:
             The table allows the ranking of kinases, as well as the calculation of promiscuity index and median percentile for each input sequence.
         """
         logging.debug("Initializing a kinex object")
+
         self.pssm = pssm
         self.scoring_matrix = scoring_matrix
         # TODO Check the table format
@@ -267,7 +270,7 @@ class Kinex:
         return Score(sequence, df)
     
 
-    def get_enrichment(self, input_sites: pd.DataFrame, fc_threshold: float = 1.5):
+    def get_enrichment(self, input_sites: pd.DataFrame, fc_threshold: float = 1.5, phospho_priming: bool = False, favorability: bool = False, method: str = 'avg'):
         """
         Counts the number of up/down/unregulated phosphosite sequences. 
         Using one-sided Fisher exact test determines the kinase enrichment.
@@ -367,7 +370,7 @@ class Kinex:
             # Get top 15 kinases, check if site is valid
             logging.debug(f"Scoring {df.iloc[id, 0]} : {id}/{len(df) - 1}")
             try:
-                top15_kinases = self.get_score(str(df.iloc[id, 0])).top(15).index
+                top15_kinases = self.get_score(sequence=str(df.iloc[id, 0]), phospho_priming=phospho_priming, favorability=favorability, method=method).top(15).index
             except ValueError:
                 logging.warning(f"Scoring of {df.iloc[id, 0]} failed")
                 failed_sites.append(df.iloc[id, 0])

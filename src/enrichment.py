@@ -145,13 +145,15 @@ class Enrichment:
             if self.enrichment_table.loc[i, "unregulated"] == 0:
                 self.enrichment_table.loc[i, "unregulated"] += 1
             
-            # adjusted p values log10 abs + dominant adjusted p values log10 abs 
+            # adjusted p values log10 abs and dominant adjusted p values log10 abs 
             self.enrichment_table.loc[i, "upregulated_adjusted_p_value_log10_abs"] = np.absolute(np.log10(self.enrichment_table.loc[i, "upregulated_adjusted_p_value"]))
             self.enrichment_table.loc[i, "downregulated_adjusted_p_value_log10_abs"] = np.absolute(np.log10(self.enrichment_table.loc[i, "downregulated_adjusted_p_value"]))
+
+
             if self.enrichment_table.loc[i, "dominant_direction"] == "downregulated set":
                 self.enrichment_table.loc[i, "dominant_adjusted_p_value_log10_abs"] = self.enrichment_table.loc[i, "downregulated_adjusted_p_value_log10_abs"]
-            elif self.enrichment_table.loc[i, "dominant_direction"] == "upnregulated set":
-                self.enrichment_table.loc[i, "dominant_adjusted_p_value_log10_abs"] = self.enrichment_table.loc[i, "upnregulated_adjusted_p_value_log10_abs"]
+            elif self.enrichment_table.loc[i, "dominant_direction"] == "upregulated set":
+                self.enrichment_table.loc[i, "dominant_adjusted_p_value_log10_abs"] = self.enrichment_table.loc[i, "upregulated_adjusted_p_value_log10_abs"]
 
         self.enrichment_table = self.enrichment_table.set_index("kinase")
 
