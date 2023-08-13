@@ -7,19 +7,24 @@ class Score:
     Attributes
     ----------
     sequence : str
-        A string representing a sequence of Amino-Acids
-    scores : pandas.DataFrame
+        A string representing a sequence of aminoacids
+    ranking : pandas.DataFrame
         containing scores, log2(scores) and percentiles for each kinase
     median_percentile : int
-        Median value of all percentiles
-
+        Median value of all percentile scores for a sequence
+        
     Methods
     -------
-    promiscuity_index : 
+    promiscuity_index(self, limit: int = 90) -> int
+        The number of kinases scoring above the {limit}th percentile
+
+    top(self, number: int = 15) -> 
+        Top {number} ranked kinases according to percentile score. 
+
     """
 
     def __init__(self, sequence: str, ranking: pd.DataFrame) -> None:
-        # TODO comment fucntion
+        # TODO comment function
         self.sequence = sequence
         # self.columns = columns
         self.ranking = ranking

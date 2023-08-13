@@ -13,22 +13,22 @@ class Enrichment:
     Attributes
     ----------
     enrichment_table: pandas.DataFrame
-        Info
+        Table containing enrichment analysis results. 
     input_sites: pandas.DataFrame
-        Info
+        A DataFrame containing the phosphosite sequences in the first column, logarithmised Fold Change in the second column, and regulation in the third column.
     failed_sites: list
-        Info
+        A list of the sites labeled invalid by the check_sequence function.
     total_upregulated: int
-        Info
+        Total number of upregulated phosphosites
     total_downregulated: int
-        Info
+        Total number of downregulated phosphosites
     total_unregulated: int
-        Info
+        Total number of unregulated phosphosites
 
     Methods
     -------
-    plot: 
-
+    plot(self, use_adjusted_pval: bool = False) -> None
+        Vulcano plot of the side displaying significant enrichment for each kinase vs the corresponding p-value.
 
     """
 
@@ -113,12 +113,8 @@ class Enrichment:
                 np.log10(upregulated_p_value))
             self.enrichment_table.loc[i, "downregulated_p_value_log10_abs"] = np.absolute(
                 np.log10(downregulated_p_value))
-
-            # TODO Ask about downregulated_adjusted_p_value
-            # Calculate upregulated_p_value_log10_abs and insert it in the enrichment table in a column with the same name
-
-            # upregulated_adjusted_p_value = multipletests(enrichment_table["upregulated_p_value"], method="fdr_bh")
-            # enrichment_table.insert(6, "upregulated_adjusted_p_value", upregulated_adjusted_p_value[1])
+            
+            # Determine the dominant direction, either upregulated or downregulated. 
 
             if upregulated_enrichment_value > downregulated_enrichment_value:
                 self.enrichment_table.loc[i,
@@ -135,7 +131,7 @@ class Enrichment:
                 self.enrichment_table.loc[i, "dominant_p_value_log10_abs"] = np.absolute(
                     np.log10(downregulated_p_value))
 
-        # Calcualte adjusted p values
+        # Calculate adjusted p values
         upregulated_adjusted_p_value = multipletests(
             self.enrichment_table["upregulated_p_value"], method="fdr_bh")
         self.enrichment_table["upregulated_adjusted_p_value"] = upregulated_adjusted_p_value[1]
@@ -515,4 +511,5 @@ class Enrichment:
                 annotation_font_color="black",
                 opacity=0.7
             )
+        fig.update_traces(textfont_size=7, textposition="middle right") 
         fig.show()

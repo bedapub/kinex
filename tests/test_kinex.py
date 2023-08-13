@@ -17,7 +17,7 @@ class TestKinex(unittest.TestCase):
     
     def test_enrichment(self):
         kinex = Kinex(pssm=pssm_table, scoring_matrix=scoring_matrix)
-        input_sites = pd.read_csv('test/data/test_input_sites.csv')
+        input_sites = pd.read_csv('tests/data/test_input_sites.csv')
         result = kinex.get_enrichment(input_sites=input_sites)
 
         self.assertEqual(len(result.enrichment_table), 2)
