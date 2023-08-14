@@ -515,3 +515,4 @@ class Enrichment:
             )
         fig.update_traces(textfont_size=7, textposition="middle right") 
         fig.show()
+        return fig
