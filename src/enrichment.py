@@ -170,6 +170,21 @@ class Enrichment:
             group.append(kinase_group[kinase])
         self.enrichment_table["group"] = group
 
+        # Colors of the kinase groups which correspond to the ones from Johnson et al. https://doi.org/10.1038/s41586-022-05575-3
+        group_colors = {
+        "TKL": "#0400A9",
+        "STE": "#754391",
+        "CK1": "#499FD2",
+        "AGC": "#992B2C", 
+        "CAMK": "#DE643A",
+        "Other": "#957C64",
+        "CMGC": "#2C643C",
+        "Alpha": "#C88AB5",
+        "PDHK": "#316D79",
+        "PIKK": "#020101",
+        "FAM20C": "#C22F7F"
+        }
+        # Plot for 2 different cases: with and without adjusted p-val
         if use_adjusted_pval:
             fig = px.scatter(
                 self.enrichment_table,
@@ -178,18 +193,11 @@ class Enrichment:
                 hover_name=self.enrichment_table.index,
                 color=self.enrichment_table["group"],
                 text=self.enrichment_table.index,
+                color_discrete_map=group_colors,  # Use the defined color mapping
+                category_orders={"group": ['TKL', 'STE', 'CK1', 'AGC', 'CAMK', 'Other', 'CMGC', 'Alpha', 'PDHK', 'PIKK', 'FAM20C']},
+                template="none"
             )
-            fig.add_hline(
-                y=1.3,
-                line_dash="dash",
-                line_width=1,
-                line_color="black",
-                annotation_text="p ≤ 0.05",
-                annotation_position="top right",
-                annotation_font_size=15,
-                annotation_font_color="black",
-                opacity=0.7
-            )
+
         else:
             fig = px.scatter(
                 self.enrichment_table,
@@ -198,18 +206,45 @@ class Enrichment:
                 hover_name=self.enrichment_table.index,
                 color=self.enrichment_table["group"],
                 text=self.enrichment_table.index,
+                color_discrete_map=group_colors,  # Use the defined color mapping
+                category_orders={"group": ['TKL', 'STE', 'CK1', 'AGC', 'CAMK', 'Other', 'CMGC', 'Alpha', 'PDHK', 'PIKK', 'FAM20C']},
+                template="none"
             )
-            fig.add_hline(
-                y=1.3,
-                line_dash="dash",
-                line_width=1,
-                line_color="black",
-                annotation_text="p ≤ 0.05",
-                annotation_position="top right",
-                annotation_font_size=15,
-                annotation_font_color="black",
-                opacity=0.7
-            )
-        fig.update_traces(textfont_size=7, textposition="middle right") 
-        fig.show()
+        # add horizontal line at y = 1.3 which is absolute val of log10(0.05)
+        fig.add_hline(
+            y=1.3,
+            line_dash="dash",
+            line_width=1,
+            line_color="black",
+            annotation_text="p ≤ 0.05",
+            annotation_position="top right",
+            annotation_font_size=10,
+            annotation_font_color="black",
+            opacity=0.7
+        )
+        # add vertical line at position x = 0
+        fig.add_vline(
+            x=0,
+            # line_dash="dash",
+            annotation_text="downregulated  | upregulated     ",
+            annotation_position="top",
+            annotation_font_size=10,
+            line_width=1,
+            line_color="black",
+            opacity=0.5
+        )
+        # format the text that appears on the points. (the kinases names)
+        fig.update_traces(
+            textfont_size=6, 
+            textposition="middle right",
+            marker=dict(size=5),
+        )
+        # format the legend
+        fig.update_layout(
+            legend = dict(font = dict(size = 10)),
+            legend_title = dict(font = dict(size = 14, color = "black")),
+            xaxis_title_font=dict(size=12),  # Set x-axis label font size
+            yaxis_title_font=dict(size=12),  # Set y-axis label font size
+        )
+        # fig.show()
         return fig
