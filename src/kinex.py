@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import scipy as sc
+import time
+import bisect
 
 from functions import check_sequence, get_sequence_format, score
 
@@ -11,7 +13,8 @@ from enrichment import Enrichment
 
 import logging
 logging.basicConfig(
-    level=logging.ERROR,
+    filename="kinex.log",
+    level=logging.DEBUG,
     format="%(asctime)s %(levelname)s %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
@@ -75,32 +78,34 @@ class Kinex:
             Table containing 82,755 experimentally identified Ser/Thr phosphosites that have been scored by 303 Ser or Thr kinase PSSM.
             The table allows the ranking of kinases, as well as the calculation of promiscuity index and median percentile for each input sequence.
         """
-        logging.debug("Initializing a kinex object")
-
         self.pssm = pssm
-        self.scoring_matrix = scoring_matrix
+        # self.scoring_matrix = scoring_matrix
+
+        self.scoring_matrix = {}
+        for col in scoring_matrix:
+            self.scoring_matrix[col] = scoring_matrix[col].to_list()
+
         # TODO Check the table format
         # TODO Add favorability attribute
-        logging.debug("Kinex object initialized")
 
     def __repr__(self):
         return ""
     
-    @property
-    def pssm(self):
-        return self._pssm
+    # @property
+    # def pssm(self):
+    #     return self._pssm
 
-    @pssm.setter
-    def pssm(self, pssm):
-        self._pssm = pssm
+    # @pssm.setter
+    # def pssm(self, pssm):
+    #     self._pssm = pssm
 
-    @property
-    def scoring_matrix(self):
-        return self._scoring_matrix
+    # @property
+    # def scoring_matrix(self):
+    #     return self._scoring_matrix
 
-    @scoring_matrix.setter
-    def scoring_matrix(self, scoring_matrix):
-        self._scoring_matrix = scoring_matrix
+    # @scoring_matrix.setter
+    # def scoring_matrix(self, scoring_matrix):
+    #     self._scoring_matrix = scoring_matrix
 
     def get_score(self, sequence: str, phospho_priming: bool = False, favorability: bool = False, method: str = 'avg') -> Score:
         """
@@ -188,6 +193,9 @@ class Kinex:
         DYRK3    4.571399   2.192636            86.052
         CDK7     9.678460   3.274777            86.048
         """
+
+        # start = time.perf_counter()
+
         sequence_format = get_sequence_format(sequence)
 
         # Check method and format
@@ -255,18 +263,24 @@ class Kinex:
 
         # Compute percentiles
         percentiles = []
+        len_matrix = len(self.scoring_matrix)
         for kinase in df.index:
             # TODO QUESTION Should we round to 3 decimals?
-            percentile = round(
-                sc.stats.percentileofscore(
-                    self.scoring_matrix[kinase], df.log_score[kinase]
-                ),
-                3,
-            )
+            percentile = (bisect.bisect_left(self.scoring_matrix[kinase], df.log_score[kinase]) + 1) * 100 / len_matrix
+            # percentile = round(
+            #     sc.stats.percentileofscore(
+            #         self.scoring_matrix[kinase], df.log_score[kinase]
+            #     ),
+            #     3,
+            # )
             percentiles.append(percentile)
 
         df.insert(2, "percentile_score", percentiles)
         df = df.sort_values("percentile_score", ascending=False)
+
+        # Debugging information
+        # end = time.perf_counter()
+        # logging.debug(f'{sequence}, {end-start}')
         return Score(sequence, df)
     
 
@@ -354,6 +368,8 @@ class Kinex:
         >>> result.failed_sites
         ['LQVKIPSKEEEsAD']
         """
+
+        start = time.perf_counter()
         # TODO check input_sites format, make sure there are all necessary columns
         df = input_sites.copy()
 
@@ -368,11 +384,11 @@ class Kinex:
 
         for id in range(len(df)):
             # Get top 15 kinases, check if site is valid
-            logging.debug(f"Scoring {df.iloc[id, 0]} : {id}/{len(df) - 1}")
+            # logging.debug(f"Scoring {df.iloc[id, 0]} : {id}/{len(df) - 1}")
             try:
                 top15_kinases = self.get_score(sequence=str(df.iloc[id, 0]), phospho_priming=phospho_priming, favorability=favorability, method=method).top(15).index
             except ValueError:
-                logging.warning(f"Scoring of {df.iloc[id, 0]} failed")
+                # logging.warning(f"Scoring of {df.iloc[id, 0]} failed")
                 failed_sites.append(df.iloc[id, 0])
                 regulation_list.append('failed')
                 continue
@@ -403,5 +419,9 @@ class Kinex:
         if total_unregulated == 0:
             total_unregulated = np.min(
                 [total_upregulated, total_downregulated])/2
+            
 
+        end = time.perf_counter()
+        logging.debug(f'{end-start}')
+        
         return Enrichment(enrichment_table, df, failed_sites, total_upregulated, total_downregulated, total_unregulated)
