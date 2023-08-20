@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import scipy as sc
 import time
 import bisect
 
@@ -79,33 +78,13 @@ class Kinex:
             The table allows the ranking of kinases, as well as the calculation of promiscuity index and median percentile for each input sequence.
         """
         self.pssm = pssm
-        # self.scoring_matrix = scoring_matrix
 
         self.scoring_matrix = {}
         for col in scoring_matrix:
             self.scoring_matrix[col] = scoring_matrix[col].to_list()
 
-        # TODO Check the table format
-        # TODO Add favorability attribute
-
     def __repr__(self):
         return ""
-    
-    # @property
-    # def pssm(self):
-    #     return self._pssm
-
-    # @pssm.setter
-    # def pssm(self, pssm):
-    #     self._pssm = pssm
-
-    # @property
-    # def scoring_matrix(self):
-    #     return self._scoring_matrix
-
-    # @scoring_matrix.setter
-    # def scoring_matrix(self, scoring_matrix):
-    #     self._scoring_matrix = scoring_matrix
 
     def get_score(self, sequence: str, phospho_priming: bool = False, favorability: bool = False, method: str = 'avg') -> Score:
         """
@@ -265,14 +244,7 @@ class Kinex:
         percentiles = []
         len_matrix = len(self.scoring_matrix)
         for kinase in df.index:
-            # TODO QUESTION Should we round to 3 decimals?
             percentile = (bisect.bisect_left(self.scoring_matrix[kinase], df.log_score[kinase]) + 1) * 100 / len_matrix
-            # percentile = round(
-            #     sc.stats.percentileofscore(
-            #         self.scoring_matrix[kinase], df.log_score[kinase]
-            #     ),
-            #     3,
-            # )
             percentiles.append(percentile)
 
         df.insert(2, "percentile_score", percentiles)
@@ -370,7 +342,6 @@ class Kinex:
         """
 
         start = time.perf_counter()
-        # TODO check input_sites format, make sure there are all necessary columns
         df = input_sites.copy()
 
         # Empty DataFrame to store the output
@@ -395,7 +366,6 @@ class Kinex:
             
             regulation = ""
             
-            # TODO check data type conversions
             if float(str(df.iloc[id, 1])) >= fc_threshold:
                 regulation = "upregulated"
                 total_upregulated += 1

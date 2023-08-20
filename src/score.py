@@ -30,20 +30,6 @@ class Score:
 
     def __repr__ (self):
         return f"Scoring results for {self.sequence}"
-    
-    @property
-    def sequence(self):
-        return self._sequence
-    @sequence.setter
-    def sequence(self, sequence):
-        self._sequence = sequence
-
-    @property
-    def ranking(self):
-        return self._ranking
-    @ranking.setter
-    def ranking(self, ranking):
-        self._ranking = ranking
 
     def promiscuity_index(self, limit: int = 90) -> int:
         return self.ranking["percentile_score"][self.ranking["percentile_score"] > limit].count()
