@@ -163,15 +163,15 @@ class Enrichment:
 
     def plot(self, use_adjusted_pval: bool = False):
 
-        kinase_group = get_groups()
+        kinase_family = get_groups()
 
-        group = []
+        family = []
         for kinase in self.enrichment_table.index:
-            group.append(kinase_group[kinase])
-        self.enrichment_table["group"] = group
+            family.append(kinase_family[kinase])
+        self.enrichment_table["family"] = family
 
         # Colors of the kinase groups which correspond to the ones from Johnson et al. https://doi.org/10.1038/s41586-022-05575-3
-        group_colors = {
+        family_colors = {
         "TKL": "#0400A9",
         "STE": "#754391",
         "CK1": "#499FD2",
@@ -191,12 +191,14 @@ class Enrichment:
                 x="dominant_enrichment_value_log2",
                 y="dominant_adjusted_p_value_log10_abs",
                 hover_name=self.enrichment_table.index,
-                color=self.enrichment_table["group"],
+                color=self.enrichment_table["family"],
                 text=self.enrichment_table.index,
-                color_discrete_map=group_colors,  # Use the defined color mapping
-                category_orders={"group": ['TKL', 'STE', 'CK1', 'AGC', 'CAMK', 'Other', 'CMGC', 'Alpha', 'PDHK', 'PIKK', 'FAM20C']},
+                color_discrete_map=family_colors,  # Use the defined color mapping
+                category_orders={"family": ['TKL', 'STE', 'CK1', 'AGC', 'CAMK', 'Other', 'CMGC', 'Alpha', 'PDHK', 'PIKK', 'FAM20C']},
                 template="none"
             )
+            y_axis_title="-Log\u2081\u2080(adjusted p-value)"
+            
 
         else:
             fig = px.scatter(
@@ -204,12 +206,14 @@ class Enrichment:
                 x="dominant_enrichment_value_log2",
                 y="dominant_p_value_log10_abs",
                 hover_name=self.enrichment_table.index,
-                color=self.enrichment_table["group"],
+                color=self.enrichment_table["family"],
                 text=self.enrichment_table.index,
-                color_discrete_map=group_colors,  # Use the defined color mapping
-                category_orders={"group": ['TKL', 'STE', 'CK1', 'AGC', 'CAMK', 'Other', 'CMGC', 'Alpha', 'PDHK', 'PIKK', 'FAM20C']},
+                color_discrete_map=family_colors,  # Use the defined color mapping
+                category_orders={"family": ['TKL', 'STE', 'CK1', 'AGC', 'CAMK', 'Other', 'CMGC', 'Alpha', 'PDHK', 'PIKK', 'FAM20C']},
                 template="none"
             )
+            y_axis_title="-Log\u2081\u2080(p-value)"
+            
         # add horizontal line at y = 1.3 which is absolute val of log10(0.05)
         fig.add_hline(
             y=1.3,
@@ -218,17 +222,16 @@ class Enrichment:
             line_color="black",
             annotation_text="p ≤ 0.05",
             annotation_position="top right",
-            annotation_font_size=10,
+            annotation_font_size=11,
             annotation_font_color="black",
             opacity=0.7
         )
         # add vertical line at position x = 0
         fig.add_vline(
             x=0,
-            # line_dash="dash",
             annotation_text="downregulated  | upregulated     ",
             annotation_position="top",
-            annotation_font_size=10,
+            annotation_font_size=11,
             line_width=1,
             line_color="black",
             opacity=0.5
@@ -245,6 +248,13 @@ class Enrichment:
             legend_title = dict(font = dict(size = 14, color = "black")),
             xaxis_title_font=dict(size=12),  # Set x-axis label font size
             yaxis_title_font=dict(size=12),  # Set y-axis label font size
+            xaxis_title='Log\u2082(enrichment value)',
+            yaxis_title=y_axis_title,
+            title = {
+             'text': "Enrichment analysis",
+             'x':0.5,
+             'xanchor': 'center',
+             "font_size": 15},
         )
-        # fig.show()
+#         fig.show()
         return fig
