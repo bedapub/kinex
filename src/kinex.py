@@ -242,9 +242,9 @@ class Kinex:
 
         # Compute percentiles
         percentiles = []
-        len_matrix = len(self.scoring_matrix)
         for kinase in df.index:
-            percentile = (bisect.bisect_left(self.scoring_matrix[kinase], df.log_score[kinase]) + 1) * 100 / len_matrix
+            # Get the position of the kinase score within the 82755 scored reference sequences and divide it by 82755 to get the percentile score
+            percentile = (bisect.bisect_left(self.scoring_matrix[kinase], df.log_score[kinase]) + 1) * 100 / 82755
             percentiles.append(percentile)
 
         df.insert(2, "percentile_score", percentiles)
@@ -348,6 +348,8 @@ class Kinex:
         enrichment_table = pd.DataFrame(
             columns=['kinase', 'upregulated', 'downregulated', 'unregulated'])
 
+#         logging.debug(enrichment_table)
+        
         # Count the number of sets
         total_upregulated = total_downregulated = total_unregulated = 0
         regulation_list = []
@@ -379,7 +381,7 @@ class Kinex:
             regulation_list.append(regulation)
 
             enrichment_table = pd.concat([enrichment_table, pd.DataFrame(
-                {"kinase": top15_kinases, regulation: np.ones(len(top15_kinases))})]).groupby('kinase').sum().reset_index()
+                {"kinase": top15_kinases, regulation: np.ones(len(top15_kinases))})]).groupby('kinase').sum(numeric_only=False).reset_index()
 
         # Add regulation column to input_sites table
         df.insert(2, 'regulation', regulation_list)
@@ -393,5 +395,6 @@ class Kinex:
 
         end = time.perf_counter()
         logging.debug(f'{end-start}')
+#         logging.debug(enrichment_table)
         
         return Enrichment(enrichment_table, df, failed_sites, total_upregulated, total_downregulated, total_unregulated)
