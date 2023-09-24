@@ -420,6 +420,6 @@ class Kinex:
 
         end = time.perf_counter()
         logging.debug(f'{end-start}')
-#         logging.debug(enrichment_table)
+        # logging.debug(enrichment_table)
         
         return Enrichment(enrichment_table, df, failed_sites, total_upregulated, total_downregulated, total_unregulated)

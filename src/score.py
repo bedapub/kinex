@@ -25,9 +25,9 @@ class Score:
 
     def __init__(self,sequence: list, ranking: list) -> None:
         self.sequence = sequence
-        self.n_sequences = len(sequence)
+        self.n_sequences = len(ranking)
         median_percentile = []
-        if len(ranking) == 1:
+        if self.n_sequences == 1:
             self.ranking = ranking[0]
             self.median_percentile = ranking[0]["percentile_score"].median()
         else:
@@ -50,4 +50,3 @@ class Score:
             return self.ranking.head(number)
         else:
             return self.ranking[subsequence].head(number)
-        
