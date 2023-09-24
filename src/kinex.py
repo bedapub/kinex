@@ -18,10 +18,11 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
+
 class Kinex:
     """
     The class representing a PSSM table and a scoring matrix needed for scoring and enrichment analysis.
-    
+
     Attributes
     ----------
     pssm : pandas.DataFrame
@@ -67,7 +68,7 @@ class Kinex:
     def __init__(self, scoring_matrix: pd.DataFrame, pssm: pd.DataFrame = get_pssm()) -> None:
         """
         Initializes the instance of the Kinex class.
-        
+
         Parameters
         ----------
         pssm : pandas.DataFrame
@@ -90,7 +91,7 @@ class Kinex:
         """
         Checks the sequence format and it's validity.
         Computes the scores, the logarithmised scores, and ranks the kinases based on the 82,755 Ser/Thr phosphosites matrix.
-              
+
         Parameters
         ----------
         sequence: str
@@ -107,7 +108,7 @@ class Kinex:
         Score
             Scoring result in form of an instance of the Score class containing sequence string, kinase ranking table, median percentile and methods 
             like promiscuity_index(limit) (returns a promiscuity index) and top(number) (returns a top {number} in kinase ranking).
-            
+
         Examples
         --------
         Reading necessary tables
@@ -151,7 +152,7 @@ class Kinex:
         Promiscuity index
         >>> result.promiscuity_index(90)
         7
-        
+
         Top 15 kinases
         >>> result.top(15)
                     score  log_score  percentile_score
@@ -178,12 +179,13 @@ class Kinex:
         sequence_format = get_sequence_format(sequence)
 
         # Check method and format
-        if not method in ['min', 'max', 'avg']:
+        if not method in ['min', 'max', 'avg', 'all']:
             raise ValueError(
-                f"Method {method} is not supported. Supported methods: 'min', 'max', 'avg'")
-        
+                f"Method {method} is not supported. Supported methods: 'min', 'max', 'avg', 'all'")
+
         if sequence_format == 'unsupported':
-            raise ValueError(f"Sequence format is not supported. Supported formats: '*' and 'central'")
+            raise ValueError(
+                f"Sequence format is not supported. Supported formats: '*' and 'central'")
 
         # Empty list for possible sequences
         sequences = []
@@ -192,13 +194,14 @@ class Kinex:
             sequence = sequence.split(sequence_format)
             num = len(sequence)
             sequence_format = '*'
-            
+
             # Make the last aminoacid lowercase
             for id in range(num):
                 if not id == num - 1:
-                    sequence[id] = sequence[id][:-1] + sequence[id][-1:].lower()
+                    sequence[id] = sequence[id][:-1] + \
+                        sequence[id][-1:].lower()
 
-            # Make possible sequences 
+            # Make possible sequences
             for id in range(num - 1):
                 seq = ''
                 for i in range(num):
@@ -217,51 +220,70 @@ class Kinex:
 
         # Empty dataframe to store scores
         df = pd.DataFrame()
+        df_all = []
         # Iterate through every sequence for asterisk format
         if sequence_format == "*":
             number_of_seq = len(sequence)
             for id in range(number_of_seq):
-                if id == 0:
-                    df = score(sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, phospho_priming=phospho_priming, favorability=favorability) / number_of_seq if method == 'avg' else score(sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, phospho_priming=phospho_priming, favorability=favorability)
+                if not phospho_priming:
+                    sequence[id] = sequence[id].upper()
+                if method == 'all':
+                    df_all.append(score(
+                        sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, favorability=favorability))
                 else:
-                    if method == 'avg':
-                        df = df.add(score(sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, phospho_priming=phospho_priming, favorability=favorability) / number_of_seq)
+                    if id == 0:
+                        df = score(sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, favorability=favorability) / number_of_seq if method == 'avg' else score(
+                            sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, favorability=favorability)
                     else:
-                        df = pd.concat([df,score(sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, phospho_priming=phospho_priming, favorability=favorability)])
-                        if method == 'min':
-                            df = df.groupby(df.index).min()
-                        elif method == 'max':
-                            df = df.groupby(df.index).max()
+                        if method == 'avg':
+                            df = df.add(score(
+                                sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, favorability=favorability) / number_of_seq)
+                        else:
+                            df = pd.concat([df, score(
+                                sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, favorability=favorability)])
+                            if method == 'min':
+                                df = df.groupby(df.index).min()
+                            elif method == 'max':
+                                df = df.groupby(df.index).max()
+
         # Central format
         elif sequence_format == 'central':
             if not check_sequence(sequence, sequence_format):
                 raise ValueError("Invalid sequence")
-            df = score(sequence=sequence, sequence_format=sequence_format, pssm=self.pssm, phospho_priming=phospho_priming, favorability=favorability)
+            if not phospho_priming:
+                sequence = sequence.upper()
+            df = score(sequence=sequence, sequence_format=sequence_format,
+                       pssm=self.pssm, favorability=favorability)
+            sequence = [sequence]
 
-        df.insert(1, "log_score", np.log2(df["score"]))
+        if not method == 'all':
+            df_all.append(df)
 
-        # Compute percentiles
-        percentiles = []
-        for kinase in df.index:
-            # Get the position of the kinase score within the 82755 scored reference sequences and divide it by 82755 to get the percentile score
-            percentile = (bisect.bisect_left(self.scoring_matrix[kinase], df.log_score[kinase]) + 1) * 100 / 82755
-            percentiles.append(percentile)
+        for table in df_all:
+            table.insert(1, "log_score", np.log2(table["score"]))
 
-        df.insert(2, "percentile_score", percentiles)
-        df = df.sort_values("percentile_score", ascending=False)
+            # Compute percentiles
+            percentiles = []
+            for kinase in table.index:
+                # Get the position of the kinase score within the 82755 scored reference sequences and divide it by 82755 to get the percentile score
+                percentile = (bisect.bisect_left(
+                    self.scoring_matrix[kinase], table.log_score[kinase]) + 1) * 100 / 82755
+                percentiles.append(percentile)
+
+            table.insert(2, "percentile_score", percentiles)
+            table.sort_values("percentile_score", ascending=False, inplace=True)
 
         # Debugging information
         # end = time.perf_counter()
         # logging.debug(f'{sequence}, {end-start}')
-        return Score(sequence, df)
-    
+        return Score(sequence, df_all)
 
     def get_enrichment(self, input_sites: pd.DataFrame, fc_threshold: float = 1.5, phospho_priming: bool = False, favorability: bool = False, method: str = 'avg'):
         """
         Counts the number of up/down/unregulated phosphosite sequences. 
         Using one-sided Fisher exact test determines the kinase enrichment.
         Vulcano plot of the side displaying significant enrichment for each kinase vs the corresponding p-value. 
-              
+
         Parameters
         ----------
         input_sites: pd.DataFrame
@@ -341,6 +363,10 @@ class Kinex:
         ['LQVKIPSKEEEsAD']
         """
 
+        if not method in ['min', 'max', 'avg']:
+            raise ValueError(
+                f"Method {method} is not supported. Supported methods: 'min', 'max', 'avg'")
+        
         start = time.perf_counter()
         df = input_sites.copy()
 
@@ -349,8 +375,7 @@ class Kinex:
             columns=['kinase', 'upregulated', 'downregulated', 'unregulated'])
 
 #         logging.debug(enrichment_table)
-        
-        # Count the number of sets
+
         total_upregulated = total_downregulated = total_unregulated = 0
         regulation_list = []
         failed_sites = []

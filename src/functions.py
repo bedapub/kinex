@@ -97,7 +97,7 @@ def check_sequence(sequence: str, sequence_format: str) -> bool:
                 return False
     return True
 
-def get_columns(sequence: str, sequence_format: str = "*", phospho_priming: bool = False) -> list:
+def get_columns(sequence: str, sequence_format: str = "*") -> list:
     """
     Makes a list of column names based on the aminoacid and position in the input sequence. 
     With the phospho-priming option, it includes the phsopho-residues in the phospho-acceptor's vicinity. 
@@ -108,8 +108,6 @@ def get_columns(sequence: str, sequence_format: str = "*", phospho_priming: bool
         Phosphosite sequence
     sequence_format : str, default '*'
         Specify which sequence format to use: '*' or 'central'
-    phospho_priming: bool, default False
-        Enable/Disable phospho-primimng
 
     Returns
     -------
@@ -125,9 +123,6 @@ def get_columns(sequence: str, sequence_format: str = "*", phospho_priming: bool
     sequence_length = len(sequence)
     column = []
     part_id = 0
-
-    if not phospho_priming:
-        sequence = sequence.upper()
 
     if sequence_format == "central":
         parts = [
@@ -169,7 +164,7 @@ def get_columns(sequence: str, sequence_format: str = "*", phospho_priming: bool
 
     return sorted(column, key=lambda item: int(item[:-1]))
 
-def score(sequence: str, sequence_format: str, pssm: pd.DataFrame, phospho_priming: bool = False, favorability: bool = False) -> pd.DataFrame:
+def score(sequence: str, sequence_format: str, pssm: pd.DataFrame, favorability: bool = False) -> pd.DataFrame:
     """
     Computes the scores for each of the 303 kinases present in the PSSM table using the list of columns returned by get_columns function.  
     
@@ -181,8 +176,6 @@ def score(sequence: str, sequence_format: str, pssm: pd.DataFrame, phospho_primi
         Specify which sequence format to use: '*' or 'central'
     pssm: pandas.DataFrame
         Position Specific Score Matrix of 303 Ser/Thr kinases
-    phospho_priming: bool, default False
-        Enable/Disable phospho-priming
     favorability: bool, default False
         Enable/Disable phospho-acceptor favorability
 
@@ -213,7 +206,7 @@ def score(sequence: str, sequence_format: str, pssm: pd.DataFrame, phospho_primi
     pssm = pssm.reset_index()
     
     columns = get_columns(
-            sequence, sequence_format, phospho_priming)
+            sequence, sequence_format)
     columns.append("kinase")
 
     if favorability == True:
