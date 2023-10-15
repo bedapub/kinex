@@ -247,7 +247,7 @@ class Enrichment:
         # add vertical line at position x = 0
         fig.add_vline(
             x=0,
-            annotation_text="downregulated  | upregulated     ",
+            annotation_text="Inhibited | Activated",
             annotation_position="top",
             annotation_font_size=11,
             line_width=1,
