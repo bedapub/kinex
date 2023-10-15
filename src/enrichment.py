@@ -260,13 +260,13 @@ class Enrichment:
             textposition="middle right",
             marker=dict(size=5),
         )
-        # format the legend
+        # format the legend and axis
         fig.update_layout(
             legend=dict(font=dict(size=10)),
             legend_title=dict(font=dict(size=14, color="black")),
             xaxis_title_font=dict(size=12),  # Set x-axis label font size
             yaxis_title_font=dict(size=12),  # Set y-axis label font size
-            xaxis_title='Log\u2082(enrichment value)',
+            xaxis_title='Log\u2082(EOR)',
             yaxis_title=y_axis_title,
             title={
                 'text': "Enrichment analysis",
