@@ -182,7 +182,7 @@ class Enrichment:
         kinase_family = get_groups()
 
         family = []
-        plotting_table = self.enrichment_table[self.enrichment_table.dominant_p_value_log10_abs > 0.1]
+        plotting_table = self.enrichment_table[self.enrichment_table.dominant_p_value_log10_abs > 0.3]
 
         for kinase in plotting_table.index:
             family.append(kinase_family[kinase])
