@@ -1,4 +1,5 @@
 import pandas as pd
+from math import sqrt, pow
 
 def get_sequence_format(sequence: str) -> str:
     """
@@ -222,3 +223,14 @@ def score(sequence: str, sequence_format: str, pssm: pd.DataFrame, favorability:
     df = df[["kinase", "score"]]
     df = df.set_index("kinase")
     return df
+
+def get_distance(point1, point2):
+    return sqrt(pow(point1[0] - point2[0], 2) + pow(point1[1] - point2[1], 2))
+
+def get_distances(df1, df2):
+    distances = []
+    for id in range(len(df1)):
+        point1 = [df1.iloc[id, 0], df1.iloc[id, 1]]
+        point2 = [df2.iloc[id, 0], df2.iloc[id, 1]]
+        distances.append(get_distance(point1, point2))
+    return distances
