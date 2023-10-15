@@ -33,7 +33,7 @@ class Enrichment:
 
     """
 
-    def __init__(self, enrichment_table: pd.DataFrame, input_sites: pd.DataFrame, failed_sites: list, total_upregulated: int, total_downregulated: int, total_unregulated: int) -> None:
+    def __init__(self, enrichment_table: pd.DataFrame, input_sites: pd.DataFrame, failed_sites: list, total_upregulated: int, total_downregulated: int, total_unregulated: int, all_kinases: set) -> None:
 
         self.enrichment_table = enrichment_table
         self.total_upregulated = total_upregulated
@@ -171,8 +171,10 @@ class Enrichment:
             elif self.enrichment_table.loc[i, "dominant_direction"] == "upregulated set":
                 self.enrichment_table.loc[i, "dominant_adjusted_p_value_log10_abs"] = self.enrichment_table.loc[i,
                                                                                                                 "upregulated_adjusted_p_value_log10_abs"]
-
         self.enrichment_table = self.enrichment_table.set_index("kinase")
+        missing_kinases = list(all_kinases - set(self.enrichment_table.index))
+        self.enrichment_table = self.enrichment_table.reindex(self.enrichment_table.index.union(missing_kinases), fill_value=0)
+        
 
     def __repr__(self) -> str:
         return f"Total number of upregulated sites is: {self.total_upregulated}\nTotal number of downregulated sites is: {self.total_downregulated}\nTotal number of unregulated sites is: {self.total_unregulated}"
