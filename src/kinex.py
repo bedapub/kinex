@@ -9,6 +9,7 @@ from data import get_pssm
 
 from score import Score
 from enrichment import Enrichment
+from comparison import Comparison
 
 import logging
 logging.basicConfig(
