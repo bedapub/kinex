@@ -1,5 +1,7 @@
 import pandas as pd
+import numpy as np
 from math import sqrt, pow
+
 
 def get_sequence_format(sequence: str) -> str:
     """
@@ -18,7 +20,7 @@ def get_sequence_format(sequence: str) -> str:
         'central'. Phosphorylation site is in the middle of the sequence; the lenght of the sequence is odd: GRNSLSPVQAS
         'unsupported format'. None of the above-mentioned
     """
-    
+
     if '*' in sequence:
         return '*'
     elif '(ph)' in sequence:
@@ -28,6 +30,7 @@ def get_sequence_format(sequence: str) -> str:
             return 'central'
     return 'unsupported'
 
+
 def check_sequence(sequence: str, sequence_format: str) -> bool:
     """
     Checks the validity of the sequence. 
@@ -36,7 +39,7 @@ def check_sequence(sequence: str, sequence_format: str) -> bool:
     - Phosphorylation site is marked with an asterix "*", on the right side of the phospho-acceptor: GRNSLs*PVQA or,
     - Phosphorylation site is in the middle of the sequence; the lenght of the sequence is odd.
     - Multiple phosphorylation sites are possible. Eg: GRNS*LPs*PVQA.
-    
+
     - The site can be made up of any of the 20 amino acids, 'X' to hide a position, and '_' to show truncation: GRXNSLs*P_VQA.
 
     Parameters
@@ -98,11 +101,12 @@ def check_sequence(sequence: str, sequence_format: str) -> bool:
                 return False
     return True
 
+
 def get_columns(sequence: str, sequence_format: str = "*") -> list:
     """
     Makes a list of column names based on the aminoacid and position in the input sequence. 
     With the phospho-priming option, it includes the phsopho-residues in the phospho-acceptor's vicinity. 
-    
+
     Parameters
     ----------
     sequence : str
@@ -165,10 +169,11 @@ def get_columns(sequence: str, sequence_format: str = "*") -> list:
 
     return sorted(column, key=lambda item: int(item[:-1]))
 
+
 def score(sequence: str, sequence_format: str, pssm: pd.DataFrame, favorability: bool = False) -> pd.DataFrame:
     """
     Computes the scores for each of the 303 kinases present in the PSSM table using the list of columns returned by get_columns function.  
-    
+
     Parameters
     ----------
     sequence : str
@@ -184,7 +189,7 @@ def score(sequence: str, sequence_format: str, pssm: pd.DataFrame, favorability:
     -------
     pandas.DataFrame
         A table of length 303 with index column 'kinase' and a 'score' column containing the calculated scores.
-        
+
     Example
     -------
     >>> score(sequence='EGRNSLS*PVQATQ', sequence_format='*', pssm=pssm, phospho_priming=False, favorability=False)
@@ -205,18 +210,17 @@ def score(sequence: str, sequence_format: str, pssm: pd.DataFrame, favorability:
     [303 rows x 1 columns]
     """
     pssm = pssm.reset_index()
-    
+
     columns = get_columns(
-            sequence, sequence_format)
+        sequence, sequence_format)
     columns.append("kinase")
 
     if favorability == True:
         seq_upper = sequence.upper()
         if seq_upper[len(sequence) // 2] == "S" or "S*" in seq_upper:
             columns.append("0S")
-        elif seq_upper[len(sequence) // 2]  == "T" or "T*" in seq_upper:
+        elif seq_upper[len(sequence) // 2] == "T" or "T*" in seq_upper:
             columns.append("0T")
-
 
     df = pssm[columns]
     df.insert(0, "score", df.prod(axis=1, numeric_only=True))
@@ -224,13 +228,10 @@ def score(sequence: str, sequence_format: str, pssm: pd.DataFrame, favorability:
     df = df.set_index("kinase")
     return df
 
-def get_distance(point1, point2):
-    return sqrt(pow(point1[0] - point2[0], 2) + pow(point1[1] - point2[1], 2))
 
 def get_distances(df1, df2):
-    distances = []
-    for id in range(len(df1)):
-        point1 = [df1.iloc[id, 0], df1.iloc[id, 1]]
-        point2 = [df2.iloc[id, 0], df2.iloc[id, 1]]
-        distances.append(get_distance(point1, point2))
-    return distances
+    enrich = np.array(df1['dominant_enrichment_value_log2']) - \
+        np.array(df2['dominant_enrichment_value_log2'])
+    p_val = np.array(df1['dominant_p_value_log10_abs']) - \
+        np.array(df2['dominant_p_value_log10_abs'])
+    return np.power(np.power(enrich, 2) + np.power(p_val, 2), 0.5)
