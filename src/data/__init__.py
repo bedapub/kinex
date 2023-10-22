@@ -10,3 +10,8 @@ def get_groups() -> dict:
     with resources.path("data", "groups.json") as file_path:
         with open(file_path) as json_file:
             return json.load(json_file)
+        
+def get_experiments() -> dict:
+    with resources.path("data", "experiments.json") as file_path:
+        with open(file_path) as json_file:
+            return json.load(json_file)
