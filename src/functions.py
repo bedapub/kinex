@@ -229,9 +229,9 @@ def score(sequence: str, sequence_format: str, pssm: pd.DataFrame, favorability:
     return df
 
 
-def get_distances(df1, df2):
-    enrich = np.array(df1['dominant_enrichment_value_log2']) - \
-        np.array(df2['dominant_enrichment_value_log2'])
-    p_val = np.array(df1['dominant_p_value_log10_abs']) - \
-        np.array(df2['dominant_p_value_log10_abs'])
+def get_distances(experiment1, experiment2):
+    enrich = np.array(experiment1['dominant_enrichment_value_log2']) - \
+        np.array(experiment2['dominant_enrichment_value_log2'])
+    p_val = np.array(experiment1['dominant_p_value_log10_abs']) - \
+        np.array(experiment2['dominant_p_value_log10_abs'])
     return np.power(np.power(enrich, 2) + np.power(p_val, 2), 0.5)
