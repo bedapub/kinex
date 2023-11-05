@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.manifold import MDS, TSNE
 from sklearn import preprocessing
 from os import listdir
+import umap
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -38,7 +39,7 @@ class Comparison:
         """
 
         method = method.upper()
-        supportedMethods = ["TSNE", "MDS"]
+        supportedMethods = ["TSNE", "MDS", "UMAP"]
 
         if method not in supportedMethods:
             raise ValueError(
@@ -103,6 +104,9 @@ class Comparison:
             elif method == 'MDS':
                 X_transform = MDS(n_components=2, dissimilarity='precomputed', normalized_stress="auto",
                                 random_state=0).fit_transform(dissimilarityMatrix)
+            elif method == 'UMAP':
+                reducer = umap.UMAP(n_neighbors=30)
+                X_transform = reducer.fit_transform(dissimilarityMatrix)
 
             scaler = preprocessing.MinMaxScaler(feature_range=(-1, 1))
             X_transform = scaler.fit_transform(X_transform)
@@ -179,6 +183,9 @@ class Comparison:
             elif method == 'MDS':
                 X_transform = MDS(n_components=2, dissimilarity='precomputed', normalized_stress="auto",
                                 random_state=0).fit_transform(dissimilarityMatrix)
+            elif method == 'UMAP':
+                reducer = umap.UMAP()
+                X_transform = reducer.fit_transform(dissimilarityMatrix)
             
             # Set the points range
             scaler = preprocessing.MinMaxScaler(feature_range=(-1, 1))
