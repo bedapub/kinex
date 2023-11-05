@@ -87,11 +87,6 @@ class Comparison:
             # Scale the data
             distances = preprocessing.scale(distances, with_mean=False)
 
-            # Shift values to remove negative values
-            # minValue = distances.min().min()
-            # if minValue < 0:
-            #     distances -= minValue
-
             # Create a dissimilarity matrix
             dissimilarityMatrix = np.zeros((nExperiments, nExperiments))
 
@@ -102,12 +97,12 @@ class Comparison:
                 dissimilarityMatrix[ids[0]][ids[1]] = dist
                 dissimilarityMatrix[ids[1]][ids[0]] = dist
 
-            # if method == 'TSNE':
-            #     X_transform = TSNE(n_components=2, learning_rate='auto', init="random",
-            #                        perplexity=50, metric='precomputed', random_state=0).fit_transform(dissimilarityMatrix)
-            # elif method == 'MDS':
-            X_transform = MDS(n_components=2, dissimilarity='precomputed', normalized_stress="auto",
-                              random_state=0).fit_transform(dissimilarityMatrix)
+            if method == 'TSNE':
+                X_transform = TSNE(n_components=2, learning_rate='auto', init="random",
+                                   perplexity=50, metric='precomputed', random_state=0).fit_transform(dissimilarityMatrix)
+            elif method == 'MDS':
+                X_transform = MDS(n_components=2, dissimilarity='precomputed', normalized_stress="auto",
+                                random_state=0).fit_transform(dissimilarityMatrix)
 
             scaler = preprocessing.MinMaxScaler(feature_range=(-1, 1))
             X_transform = scaler.fit_transform(X_transform)
@@ -169,11 +164,6 @@ class Comparison:
             # Scale the distances
             distances = preprocessing.scale(distances, with_mean=False)
 
-            # Shift values to remove negative values
-            # minValue = distances.min().min()
-            # if minValue < 0:
-            #     distances -= minValue
-
             # Create a dissimilarity matrix
             dissimilarityMatrix = np.zeros((nExperiments, nExperiments))
 
@@ -183,8 +173,12 @@ class Comparison:
                 dissimilarityMatrix[ids[0]][ids[1]] = dist
                 dissimilarityMatrix[ids[1]][ids[0]] = dist
 
-            X_transform = MDS(n_components=2, dissimilarity='precomputed', normalized_stress="auto",
-                              random_state=0).fit_transform(dissimilarityMatrix)
+            if method == 'TSNE':
+                X_transform = TSNE(n_components=2, learning_rate='auto', init="random",
+                                   perplexity=3, metric='precomputed', random_state=0).fit_transform(dissimilarityMatrix)
+            elif method == 'MDS':
+                X_transform = MDS(n_components=2, dissimilarity='precomputed', normalized_stress="auto",
+                                random_state=0).fit_transform(dissimilarityMatrix)
             
             # Set the points range
             scaler = preprocessing.MinMaxScaler(feature_range=(-1, 1))
