@@ -11,11 +11,31 @@ from data import get_experiments
 
 
 class Comparison:
+    """
+    Methods
+    -------
+    get_comparison(self, input_data: pd.DataFrame = None, data_path: str = None, method: str = "tSNE")
+        Compares samples
+    """
 
     def __init__(self) -> None:
         self.experiments = get_experiments()
 
-    def get_comparison(self, input_data: pd.DataFrame = None, data_path: str = None, method: str = "tSNE", center: bool = True):
+    def get_comparison(self, input_data: pd.DataFrame = None, data_path: str = None, method: str = "MDS", center: bool = True):
+        """
+        Method to either compare the input with a collection of drugs from Zecha et al. or compare multiple samples between eachother
+
+        Attributes
+        ----------
+        data_path:
+            Can be eitehr the path to the collection of drugs profiles (a json file given with the paper) 
+            Or can be a path to the user generated Kinex enrichment tables. Must contain enrichment values and p values. The name of the samples will be given by the filename.     
+        input_data: pandas.DataFrame  
+            Optional
+            A DataFrame representing the Kinex enrichment table that will be used to compare it to the collection of drugs from Zecha et al.
+        method: str
+            Dimensionality redcution method which can be either "umap", "tsne" or "mds". By default: MDS
+        """
 
         method = method.upper()
         supportedMethods = ["TSNE", "MDS"]
@@ -23,9 +43,10 @@ class Comparison:
         if method not in supportedMethods:
             raise ValueError(
                 f"The method {method} is not supported. Supported methods: " + supportedMethods)
-        
+
         if input_data is None and data_path is None:
-            raise ValueError("Please give at least the input or the path to the experiments")
+            raise ValueError(
+                "Please give at least the input or the path to the experiments")
 
         if data_path is None:
             # Add Input and DMSO
@@ -34,8 +55,8 @@ class Comparison:
             self.experiments.append({"id": nExperiments, "experiment_name": "DMSO", "dose": 0,
                                     "dominant_enrichment_value_log2": np.zeros(303), "dominant_p_value_log10_abs": np.zeros(303)})
 
-            self.experiments.append({"id": nExperiments + 1, "experiment_name": input_data.experiment_name.unique()[0], "dose": input_data.dose.unique()[
-                0], "dominant_enrichment_value_log2": np.array(input_data["dominant_enrichment_value_log2"]), "dominant_p_value_log10_abs": np.array(input_data["dominant_p_value_log10_abs"])})
+            self.experiments.append({"id": nExperiments + 1, "experiment_name": "Input", "dose": "Input", "dominant_enrichment_value_log2": np.array(
+                input_data["dominant_enrichment_value_log2"]), "dominant_p_value_log10_abs": np.array(input_data["dominant_p_value_log10_abs"])})
 
             # Calculate how many distances need to be computed for experiments + DMS0 + Input
             nExperiments += 2
@@ -64,12 +85,12 @@ class Comparison:
                     counter += 1
 
             # Scale the data
-            distances = preprocessing.scale(distances)
+            distances = preprocessing.scale(distances, with_mean=False)
 
             # Shift values to remove negative values
-            minValue = distances.min().min()
-            if minValue < 0:
-                distances -= minValue
+            # minValue = distances.min().min()
+            # if minValue < 0:
+            #     distances -= minValue
 
             # Create a dissimilarity matrix
             dissimilarityMatrix = np.zeros((nExperiments, nExperiments))
@@ -81,15 +102,17 @@ class Comparison:
                 dissimilarityMatrix[ids[0]][ids[1]] = dist
                 dissimilarityMatrix[ids[1]][ids[0]] = dist
 
-            if method == 'TSNE':
-                X_transform = TSNE(n_components=2, learning_rate='auto', init="random",
-                                   perplexity=50, metric='precomputed', random_state=0).fit_transform(dissimilarityMatrix)
-            elif method == 'MDS':
-                X_transform = MDS(n_components=2, dissimilarity='precomputed', normalized_stress="auto",
-                                  random_state=0).fit_transform(dissimilarityMatrix)
+            # if method == 'TSNE':
+            #     X_transform = TSNE(n_components=2, learning_rate='auto', init="random",
+            #                        perplexity=50, metric='precomputed', random_state=0).fit_transform(dissimilarityMatrix)
+            # elif method == 'MDS':
+            X_transform = MDS(n_components=2, dissimilarity='precomputed', normalized_stress="auto",
+                              random_state=0).fit_transform(dissimilarityMatrix)
 
-            if center:
-                X_transform -= X_transform[-2]
+            scaler = preprocessing.MinMaxScaler(feature_range=(-1, 1))
+            X_transform = scaler.fit_transform(X_transform)
+
+            X_transform -= X_transform[-2]
 
             fig1 = px.scatter(X_transform[:-1], x=0, y=1, color=colorIndex[:-1],
                               hover_name=textIndex[:-1], opacity=0.6)
@@ -108,7 +131,7 @@ class Comparison:
             fig.update_yaxes(scaleanchor="x", scaleratio=1)
 
             return fig
-        
+
         else:
             table_paths = []
             index = []
@@ -144,12 +167,12 @@ class Comparison:
                     counter += 1
 
             # Scale the distances
-            distances = preprocessing.scale(distances)
+            distances = preprocessing.scale(distances, with_mean=False)
 
             # Shift values to remove negative values
-            minValue = distances.min().min()
-            if minValue < 0:
-                distances -= minValue
+            # minValue = distances.min().min()
+            # if minValue < 0:
+            #     distances -= minValue
 
             # Create a dissimilarity matrix
             dissimilarityMatrix = np.zeros((nExperiments, nExperiments))
@@ -160,16 +183,20 @@ class Comparison:
                 dissimilarityMatrix[ids[0]][ids[1]] = dist
                 dissimilarityMatrix[ids[1]][ids[0]] = dist
 
-            X_transform = TSNE(n_components=2, learning_rate='auto', init="random",
-                               perplexity=2, metric='precomputed', random_state=0).fit_transform(dissimilarityMatrix)
+            X_transform = MDS(n_components=2, dissimilarity='precomputed', normalized_stress="auto",
+                              random_state=0).fit_transform(dissimilarityMatrix)
+            
+            # Set the points range
+            scaler = preprocessing.MinMaxScaler(feature_range=(-1, 1))
+            X_transform = scaler.fit_transform(X_transform)
 
-            # Center the DMSO
+            # Center to DMSO
             X_transform -= X_transform[-1]
 
             fig = px.scatter(X_transform, x=0, y=1, color=index,
                              hover_name=index, opacity=1)
-            fig.update_layout(title=f"tSNE ALL DRUGS", xaxis_title=f"tSNE1", yaxis_title=f"tSNE2", template="none", showlegend=False, xaxis=dict(ticks="outside",
-                                                                                                                                                 mirror=True, showline=True), yaxis=dict(ticks="outside", mirror=True, showline=True), legend=dict(title="Drug"), width=800, height=800)
+            fig.update_layout(title=f"{method} ALL DRUGS", xaxis_title=f"{method}1", yaxis_title=f"{method}2", template="none", showlegend=False, xaxis=dict(ticks="outside",
+                                                                                                                                                             mirror=True, showline=True), yaxis=dict(ticks="outside", mirror=True, showline=True), legend=dict(title="Drug"), width=800, height=800)
             fig.update_yaxes(scaleanchor="x", scaleratio=1)
-            
+
             return fig
