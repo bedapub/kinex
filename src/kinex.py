@@ -391,6 +391,7 @@ class Kinex:
                 # logging.warning(f"Scoring of {df.iloc[id, 0]} failed")
                 failed_sites.append(df.iloc[id, 0])
                 regulation_list.append('failed')
+                top15_kinases_list.append("")
                 continue
             
             regulation = ""
