@@ -380,6 +380,7 @@ class Kinex:
         total_upregulated = total_downregulated = total_unregulated = 0
         regulation_list = []
         failed_sites = []
+        top15_kinases_list = []
 
         for id in range(len(df)):
             # Get top 15 kinases, check if site is valid
@@ -393,7 +394,6 @@ class Kinex:
                 continue
             
             regulation = ""
-            
             if float(str(df.iloc[id, 1])) >= fc_threshold:
                 regulation = "upregulated"
                 total_upregulated += 1
@@ -405,23 +405,23 @@ class Kinex:
                 total_unregulated += 1
 
             regulation_list.append(regulation)
+            top15_kinases_list.append(",".join(top15_kinases))
 
             enrichment_table = pd.concat([enrichment_table, pd.DataFrame(
                 {"kinase": top15_kinases, regulation: np.ones(len(top15_kinases))})]).groupby('kinase').sum(numeric_only=False).reset_index()
 
         # Add regulation column to input_sites table
         df.insert(2, 'regulation', regulation_list)
+        df.insert(3, 'top15_kinases', top15_kinases_list)
 
         # TODO think about background adjustment
         # Background adjustment
         if total_unregulated == 0:
             total_unregulated = np.min(
                 [total_upregulated, total_downregulated])/2
-            
 
         end = time.perf_counter()
         logging.debug(f'{end-start}')
         # logging.debug(enrichment_table)
-
 
         return Enrichment(enrichment_table, df, failed_sites, total_upregulated, total_downregulated, total_unregulated, set(self.pssm.index))
