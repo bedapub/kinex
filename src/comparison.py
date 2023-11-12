@@ -3,13 +3,12 @@ import numpy as np
 from sklearn.manifold import MDS, TSNE
 from sklearn import preprocessing
 from os import listdir
-import umap
+from umap import UMAP
 
 import plotly.express as px
 import plotly.graph_objects as go
 from functions import get_distances
 from data import get_experiments
-
 
 class Comparison:
     """
@@ -105,7 +104,7 @@ class Comparison:
                 X_transform = MDS(n_components=2, dissimilarity='precomputed', normalized_stress="auto",
                                 random_state=0).fit_transform(dissimilarityMatrix)
             elif method == 'UMAP':
-                reducer = umap.UMAP(n_neighbors=30)
+                reducer = UMAP(n_neighbors=30)
                 X_transform = reducer.fit_transform(dissimilarityMatrix)
 
             scaler = preprocessing.MinMaxScaler(feature_range=(-1, 1))
@@ -184,7 +183,7 @@ class Comparison:
                 X_transform = MDS(n_components=2, dissimilarity='precomputed', normalized_stress="auto",
                                 random_state=0).fit_transform(dissimilarityMatrix)
             elif method == 'UMAP':
-                reducer = umap.UMAP()
+                reducer = UMAP()
                 X_transform = reducer.fit_transform(dissimilarityMatrix)
             
             # Set the points range
