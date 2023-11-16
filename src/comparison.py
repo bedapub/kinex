@@ -74,9 +74,12 @@ class Comparison:
             counter = 0
             for id1, experiment1 in enumerate(self.experiments):
                 # Save the values for plot indexing
-                colorIndex[id1] = experiment1["experiment_name"]
-                textIndex[id1] = experiment1["dose"]
+                if len(experiment1["experiment_name"].split("_")) > 6:
+                    colorIndex[id1] = experiment1["experiment_name"].split("_")[-6]
+                else:
+                    colorIndex[id1] = experiment1["experiment_name"]
 
+                textIndex[id1] = experiment1["dose"]
                 for experiment2 in self.experiments[id1+1:]:
                     distances[counter][:] = get_distances(
                         experiment1=experiment1, experiment2=experiment2)
@@ -113,7 +116,7 @@ class Comparison:
             X_transform -= X_transform[-2]
 
             fig1 = px.scatter(X_transform[:-1], x=0, y=1, color=colorIndex[:-1],
-                              hover_name=textIndex[:-1], opacity=0.6)
+                              hover_name=textIndex[:-1], opacity=0.7)
 
             fig1.update_traces(marker=dict(size=5, line=dict(width=0.5)),
                                textposition='top right')
