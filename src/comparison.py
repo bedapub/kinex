@@ -128,7 +128,7 @@ class Comparison:
 
             fig = go.Figure(data=fig1.data + fig2.data)
             fig.update_layout(title=f"{method} ALL DRUGS", xaxis_title=f"{method}1", yaxis_title=f"{method}2", template="none", showlegend=False, xaxis=dict(ticks="outside",
-                                                                                                                                                             mirror=True, showline=True), yaxis=dict(ticks="outside", mirror=True, showline=True), legend=dict(title="Drug"), width=800, height=800)
+                                                                                                                                                             mirror=True, showline=True), yaxis=dict(ticks="outside", mirror=True, showline=True), legend=dict(title="Drug"), width=600, height=600)
             fig.update_yaxes(scaleanchor="x", scaleratio=1)
 
             return fig
@@ -199,7 +199,7 @@ class Comparison:
             fig = px.scatter(X_transform, x=0, y=1, color=index,
                              hover_name=index, opacity=1)
             fig.update_layout(title=f"{method} ALL DRUGS", xaxis_title=f"{method}1", yaxis_title=f"{method}2", template="none", showlegend=False, xaxis=dict(ticks="outside",
-                                                                                                                                                             mirror=True, showline=True), yaxis=dict(ticks="outside", mirror=True, showline=True), legend=dict(title="Drug"), width=800, height=800)
+                                                                                                                                                             mirror=True, showline=True), yaxis=dict(ticks="outside", mirror=True, showline=True), legend=dict(title="Drug"), width=600, height=600)
             fig.update_yaxes(scaleanchor="x", scaleratio=1)
 
             return fig

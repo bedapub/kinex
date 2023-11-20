@@ -16,7 +16,8 @@ class Enrichment:
     enrichment_table: pandas.DataFrame
         Table containing enrichment analysis results. 
     input_sites: pandas.DataFrame
-        A DataFrame containing the phosphosite sequences in the first column, logarithmised Fold Change in the second column, and regulation in the third column.
+        A DataFrame containing the phosphosite sequences in the first column, logarithmised Fold Change in the second column, 
+        regulation in the third column, and top15 kinases most likely to target each sequence in the fourth column.
     failed_sites: list
         A list of the sites labeled invalid by the check_sequence function.
     total_upregulated: int
@@ -173,8 +174,8 @@ class Enrichment:
                                                                                                                 "upregulated_adjusted_p_value_log10_abs"]
         self.enrichment_table = self.enrichment_table.set_index("kinase")
         missing_kinases = list(all_kinases - set(self.enrichment_table.index))
-        self.enrichment_table = self.enrichment_table.reindex(self.enrichment_table.index.union(missing_kinases), fill_value=0)
-        
+        self.enrichment_table = self.enrichment_table.reindex(
+            self.enrichment_table.index.union(missing_kinases), fill_value=0)
 
     def __repr__(self) -> str:
         return f"Total number of upregulated sites is: {self.total_upregulated}\nTotal number of downregulated sites is: {self.total_downregulated}\nTotal number of unregulated sites is: {self.total_unregulated}"
@@ -258,23 +259,28 @@ class Enrichment:
         )
         # format the text that appears on the points. (the kinases names)
         fig.update_traces(
-            textfont_size=6,
+            textfont_size=7,
             textposition="middle right",
-            marker=dict(size=5),
+            marker=dict(size=6),
         )
         # format the legend and axis
         fig.update_layout(
             legend=dict(font=dict(size=10)),
             legend_title=dict(font=dict(size=14, color="black")),
+            legend_title_text="Family",
             xaxis_title_font=dict(size=12),  # Set x-axis label font size
             yaxis_title_font=dict(size=12),  # Set y-axis label font size
             xaxis_title='Log\u2082(EOR)',
             yaxis_title=y_axis_title,
             title={
-                'text': "Enrichment analysis",
+                'text': "Kinase inference",
                 'x': 0.5,
                 'xanchor': 'center',
                 "font_size": 15},
+            xaxis=dict(ticks="outside", mirror=True, showline=True),
+            yaxis=dict(ticks="outside", mirror=True, showline=True),
+            width=600,
+            height=600
         )
 #         fig.show()
         return fig
