@@ -272,7 +272,8 @@ class Kinex:
                 percentiles.append(percentile)
 
             table.insert(2, "percentile_score", percentiles)
-            table.sort_values("percentile_score", ascending=False, inplace=True)
+            table.sort_values("percentile_score",
+                              ascending=False, inplace=True)
 
         # Debugging information
         # end = time.perf_counter()
@@ -367,9 +368,12 @@ class Kinex:
         if not method in ['min', 'max', 'avg']:
             raise ValueError(
                 f"Method {method} is not supported. Supported methods: 'min', 'max', 'avg'")
-        
+
         start = time.perf_counter()
         df = input_sites.copy()
+
+        df.iloc[:,0] = df.iloc[:,0].astype(str).str.replace('(ub)', '', regex=False).str.replace(
+            '(ox)', '', regex=False).str.replace('(ac)', '', regex=False).str.replace('(de)', '', regex=False)
 
         # Empty DataFrame to store the output
         enrichment_table = pd.DataFrame(
@@ -386,14 +390,15 @@ class Kinex:
             # Get top 15 kinases, check if site is valid
             # logging.debug(f"Scoring {df.iloc[id, 0]} : {id}/{len(df) - 1}")
             try:
-                top15_kinases = self.get_score(sequence=str(df.iloc[id, 0]), phospho_priming=phospho_priming, favorability=favorability, method=method).top(15).index
+                top15_kinases = self.get_score(sequence=str(
+                    df.iloc[id, 0]), phospho_priming=phospho_priming, favorability=favorability, method=method).top(15).index
             except ValueError:
                 # logging.warning(f"Scoring of {df.iloc[id, 0]} failed")
                 failed_sites.append(df.iloc[id, 0])
                 regulation_list.append('failed')
                 top15_kinases_list.append("")
                 continue
-            
+
             regulation = ""
             if float(str(df.iloc[id, 1])) >= fc_threshold:
                 regulation = "upregulated"
