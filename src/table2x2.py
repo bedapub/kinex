@@ -10,7 +10,7 @@ class Table2x2:
     ----------
         table: numpy.ndarray
             2x2 contingency table
-        shirt_zeros: bool
+        shift_zeros: bool
             Represents whether to shift zero values
 
     Methods
