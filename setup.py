@@ -10,14 +10,14 @@ setup(
     author="Alexandra Valeanu",
     author_email="valeanualexandra17@gmail.com",
     python_requires='>=3.8',
-    install_requires = [
+    install_requires=[
         "scipy >= 1.10.0",
         "numpy >= 1.19.5",
         "nbformat>=4.2.0",
         "statsmodels",
         "plotly"
     ],
-    extras_require = {
+    extras_require={
         "dev": [
             "sphinx",
             "furo",
