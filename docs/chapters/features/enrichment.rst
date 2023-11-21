@@ -1,5 +1,5 @@
-Enrichment analysis
-===================
+Kinases inference
+=================
 
 1. Read your input sequences file. Make sure to have on first column the sequences and on second column the log2 transformed Fold Change.
 
@@ -7,25 +7,25 @@ Enrichment analysis
 
     >>> input_sites = pd.read_csv('path/to/your/input_sites.csv')
     >>> input_sites
-              sequence   log2_fc
-    0    LQVKIPSKEEEAD -0.476009
-    1    EGRNSLSPVQATQ  0.066476
-    ..             ...       ...
-    107  GKLCAHSQQRQYR -2.706312
-    108  KEKVHLSDSERKM -1.168763
+                  Sequence  Fold Change: a/a' KO Clone A vs WT
+    0     KLEEKQKs*DAEEDGV                          -88.159789
+    1     EEDGVTGs*QDEEDSK                          -88.159789
+    ..                 ...                                 ...
+    462   AKEESEEs*DEDMGFG                           19.421218
+    463   RNGPRDAs*PPGSEPE                           63.187703
 
-    [109 rows x 2 columns]
+    [464 rows x 2 columns]
     pandas.DataFrame
 
 2. Run enrichment analysis with your input phosphosite sequences.
 
 .. code:: python
 
-    >>> enrich = kinex.get_enrichment(input_sites, fc_threshold=1, phospho_priming=False, favorability=True, method='avg')
+    >>> enrich = kinex.get_enrichment(input_sites, fc_threshold=1.5, phospho_priming=False, favorability=True, method="max")
     >>> enrich
-    Total number of upregulated sites is: 3
-    Total number of downregulated sites is: 70
-    Total number of unregulated sites is: 34
+    Total number of upregulated sites is: 63
+    Total number of downregulated sites is: 86
+    Total number of unregulated sites is: 309
     enrichment.Enrichment
 
 3. Access the total number of upregulated, downregulated and unregulated sites. 
@@ -33,13 +33,13 @@ Enrichment analysis
 .. code:: python
 
     >>> enrich.total_upregulated
-    3
+    63
     int
     >>> enrich.total_downregulated
-    70
+    86
     int
     >>> enrich.total_unregulated
-    34
+    309
     int
 
 4. Check the sites that were marked as failed. 
@@ -47,7 +47,7 @@ Enrichment analysis
 .. code:: python
 
     >>> enrich.failed_sites
-    ['PEVVGSDSEVEG', 'EEEADMIJSSPTQRT']
+    ['EKIGEGTyGVVYKGR', 'KPSIVTKyVESDDEK', 'LGQRIYQyIQSRFYR', 'INPGYDDyADSDEDQ', 'ADNDITPyLVSRFYR', 'RGEPNVSyICSRYYR']
     list
 
 5. Check the regulation of each sequence and top 15 kinases most likely to target each sequence
@@ -55,14 +55,14 @@ Enrichment analysis
 .. code:: python
 
     >>> enrich.input_sites
-                  site   log2_fc     regulation top15_kinases
-    0    LQVKIPSKEEEAD -0.476009    unregulated CAMK2B,CAMK2G,GSK3B,FAM20C,CAMK2A,MAPKAPK2,GRK...
-    1    EGRNSLSPVQATQ  0.066476    unregulated NLK,SMG1,CDK4,JNK3,DYRK1B,JNK1,DYRK2,JNK2,P38G...
-    ..             ...       ...            ... ...
-    107  GKLCAHSQQRQYR -2.706312  downregulated CHAK1,IRE1,IRE2,SMG1,HRI,ATR,DNAPK,CHAK2,STK33...
-    108  KEKVHLSDSERKM -1.168763    unregulated CK2A1,CK2A2,DRAK1,MEK1,GRK5,ACVR2B,SMG1,GRK6,A...
+                  Sequence  Fold Change: a/a' KO Clone A vs WT     regulation top15_kinases
+    0     KLEEKQKs*DAEEDGV                          -88.159789  downregulated GRK7,IKKA,CAMK2B,CK2A1,CK2A2,GRK6,LATS2,GRK1,C... 
+    1     EEDGVTGs*QDEEDSK                          -88.159789  downregulated DNAPK,CAMK2G,ATM,ATR,GRK5,GRK1,SMG1,CAMK2B,GRK... 
+    ..                 ...                                 ...            ...   
+    462   AKEESEEs*DEDMGFG                           19.421218    upregulated BMPR1A,TGFBR1,BMPR1B,ALK2,CK1G2,CK2A2,ACVR2A,G...   
+    463   RNGPRDAs*PPGSEPE                           63.187703    upregulated SRPK2,SRPK1,SRPK3,HIPK4,CLK2,CLK3,HIPK2,KIS,GR... 
 
-    [109 rows x 3 columns]
+    [464 rows x 4 columns]
     pandas.DataFrame
 
 6. Show enrichment table.
@@ -71,14 +71,15 @@ Enrichment analysis
 
     >>> enrich.enrichment_table
 
-    kinase  upregulated  downregulated  ...  dominant_p_value_log10_abs  dominant_adjusted_p_value_log10_abs
-    AAK1              0            7.0  ...                         0.0                                  0.0 
-    ACVR2A            0           12.0  ...                    0.021065                                  0.0 
-    ...             ...            ...  ...                         ...                                  ...
-    YSK4              0            2.0  ...                         0.0                                  0.0 
-    ZAK               0            1.0  ...                         0.0                                  0.0 
-         
-    [282 rows x 19 columns]
+            upregulated  downregulated  ... dominant_enrichment_value_log2 dominant_p_value_log10_abs
+    kinase                                                                      
+    AAK1             0            1.0   ...                      -0.263034                   0.202666
+    ACVR2A        12.0           23.0   ...                      -1.562107                   3.346702
+    ...            ...            ...   ...                            ...                        ...
+    YSK4             0            2.0   ...                      -1.869777                    0.68218 
+    ZAK            1.0            3.0   ...                       -3.47671                     1.4713
+    
+    [303 rows x 19 columns]
     pandas.DataFrame
 
 7. Vulcano plot of enrichment vs p-value. Kinases are represented with colours corresponding to their class. 

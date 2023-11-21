@@ -7,8 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Kinex'
-copyright = '2023, Alexandra Valeanu'
-author = 'Alexandra Valeanu'
+copyright = '2023, Jitao David Zhang'
+author = 'Jitao David Zhang'
 release = '0.0.1'
 
 # -- General configuration ---------------------------------------------------
