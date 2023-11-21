@@ -113,7 +113,7 @@ class Comparison:
             X_transform -= X_transform[-2]
 
             fig1 = px.scatter(X_transform[:-1], x=0, y=1, color=colorIndex[:-1],
-                              hover_name=textIndex[:-1], opacity=0.7)
+                              hover_name=textIndex[:-1], opacity=0.75)
 
             fig1.update_traces(marker=dict(size=5, line=dict(width=0.5)),
                                textposition='top right')
