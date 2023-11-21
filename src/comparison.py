@@ -74,10 +74,7 @@ class Comparison:
             counter = 0
             for id1, experiment1 in enumerate(self.experiments):
                 # Save the values for plot indexing
-                if len(experiment1["experiment_name"].split("_")) > 6:
-                    colorIndex[id1] = experiment1["experiment_name"].split("_")[-6]
-                else:
-                    colorIndex[id1] = experiment1["experiment_name"]
+                colorIndex[id1] = experiment1["experiment_name"]
 
                 textIndex[id1] = experiment1["dose"]
                 for experiment2 in self.experiments[id1+1:]:
