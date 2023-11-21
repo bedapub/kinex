@@ -15,7 +15,10 @@ setup(
         "numpy >= 1.19.5",
         "nbformat>=4.2.0",
         "statsmodels",
-        "plotly"
+        "plotly",
+        "scikit-learn",
+        "umap-learn",
+        "importlib-resources"
     ],
     extras_require={
         "dev": [

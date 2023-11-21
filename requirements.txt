@@ -3,3 +3,6 @@ python>=3.8
 numpy>=1.19.5
 statsmodels
 plotly
+scikit-learn
+umap-learn
+importlib-resources
