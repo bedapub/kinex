@@ -1,8 +1,8 @@
-# kinex
+# Kinex
 
-# About
+Alexandra Valeanu and Jitao David Zhang with the input and help of many colleagues
 
-**kinex** is a Python package for Causal Kinases Inference from Phosphoproteomics Data.
+**kinex** is a workflow implemented in a Python package with the same name. Kinex infers causal kinases from phosphoproteomics data.
 
 ## Table of Contents
 
