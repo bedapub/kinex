@@ -17,18 +17,18 @@ Kinases inference
     [464 rows x 2 columns]
     pandas.DataFrame
 
-2. Run enrichment analysis with your input phosphosite sequences.
+2. Run enrichment analysis with your input phospho-sequences.
 
 .. code:: python
 
     >>> enrich = kinex.get_enrichment(input_sites, fc_threshold=1.5, phospho_priming=False, favorability=True, method="max")
     >>> enrich
-    Total number of upregulated sites is: 63
-    Total number of downregulated sites is: 86
-    Total number of unregulated sites is: 309
+    Total number of upregulated phospho-sequences is: 63
+    Total number of downregulated phospho-sequences is: 86
+    Total number of unregulated phospho-sequences is: 309
     enrichment.Enrichment
 
-3. Access the total number of upregulated, downregulated and unregulated sites. 
+3. Access the total number of upregulated, downregulated and unregulated phospho-sequences. 
 
 .. code:: python
 

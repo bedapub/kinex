@@ -178,7 +178,7 @@ class Enrichment:
             self.enrichment_table.index.union(missing_kinases), fill_value=0)
 
     def __repr__(self) -> str:
-        return f"Total number of upregulated sites is: {self.total_upregulated}\nTotal number of downregulated sites is: {self.total_downregulated}\nTotal number of unregulated sites is: {self.total_unregulated}"
+        return f"Total number of upregulated phospho-sequences is: {self.total_upregulated}\nTotal number of downregulated phospho-sequences is: {self.total_downregulated}\nTotal number of unregulated phospho-sequences is: {self.total_unregulated}"
 
     def plot(self, use_adjusted_pval: bool = False):
 

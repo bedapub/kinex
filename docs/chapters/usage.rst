@@ -14,17 +14,36 @@ Import package and initialise data object
 
 .. code:: python
 
-    >>> scoring_matrix = pd.read_csv('path/to/your/scoring_matrix.csv', index_col=0)
+    >>> scoring_matrix = pd.read_csv("https://zenodo.org/records/10201142/files/kinex_scoring_matrix_82k_sorted.csv.gzip?download=1", compression="gzip")
     >>> scoring_matrix
 
-                        AAK1    ACVR2A  ...      YSK4       ZAK
-    VDDEKGDSNDDYDSA -7.652375 -0.556483  ... -1.380515 -2.494291
-    YDSAGLLSDEDCMSV -3.490767 -0.142416  ... -3.372538 -5.395429
-    ...                   ...       ...  ...       ...       ...
-    SEEEASSTEKPTKAL -3.756161  1.451276  ... -0.338382 -1.325926
-    ASSTEKPTKALPRKS -1.541950 -2.177326  ... -3.003581 -2.549749
+                AAK1    ACVR2A  ...      YSK4       ZAK
+    0     -11.147481 -6.325340  ... -6.723077 -7.402360
+    1     -10.421859 -6.178601  ... -6.343452 -7.373478
+    ...          ...       ...  ...
+    82753   8.074270  7.289390  ...  4.525527  4.837377
+    82754   8.623180  7.871226  ...  4.869195  5.062391
 
     [82755 rows x 303 columns]
+
+.. note::
+
+    You can optionally save the scoring matrix locally for future uses.
+
+    .. code:: bash
+
+        >>> ### Download scoring matrix of 82k pre-scored sites
+        >>> !mkdir scoring_matrix
+        >>> !wget https://zenodo.org/records/10201142/files/kinex_scoring_matrix_82k_sorted.csv.gzip?download=1 -O scoring_matrix/kinex_scoring_matrix_82k_sorted.csv.gzip
+        >>> !mv scoring_matrix/kinex_scoring_matrix_82k_sorted.csv.gzip scoring_matrix/kinex_scoring_matrix_82k_sorted.csv.gz
+        >>> !gunzip scoring_matrix/kinex_scoring_matrix_82k_sorted.csv.gz
+
+    .. code:: python
+
+        >>> ### Read the scoring matrix from file
+        >>> scoring_matrix = pd.read_csv("scoring_matrix/scoring_matrix_82k_sorted.csv")
+
+    Or just download using the `link <https://zenodo.org/records/10201142/files/kinex_scoring_matrix_82k_sorted.csv.gzip?download=1>`_
 
 3.  Create a kinex object.
 

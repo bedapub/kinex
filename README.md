@@ -20,40 +20,26 @@ Alexandra Valeanu and Jitao David Zhang with the input and help of many colleagu
 ## Requirements
 
 - [conda](https://docs.conda.io/en/latest/miniconda.html)
-- python 3.11
+- python >= 3.8
 
 ## Installation
 
 Here are few ways to install **kinex**
 
-### Using pip
+### From source
 
-1. Create and activate a conda venv:
+1. Create and activate a pytion 3.8+ conda venv:
 
 ```
 conda create --name kinex
 conda activate kinex
-```
-
-2. Install kinex from Pypi:
-
-```
-pip install kinex
-```
-
-### From source
-
-1. Create and activate a pytion 3.11 conda venv:
-
-```
-conda create --name kinex
-conda activate kinex`
+conda install python
 ```
 
 2. Download the package:
 
 ```
-git clone git@github.com:alexandra-valeanu/kinex.git
+git clone git@github.com:bedapub/kinex.git
 cd kinex
 ```
 
@@ -63,6 +49,6 @@ cd kinex
 pip install -e .
 ```
 
-## Documentation
+## [Documentation](https://kinex.readthedocs.io/en/latest/)
 
-You can find detailed documentation describing every feature of the package with examples and tutorials here
+You can find detailed [documentation](https://kinex.readthedocs.io/en/latest/) describing every feature of the package with examples and tutorials [here](https://kinex.readthedocs.io/en/latest/).

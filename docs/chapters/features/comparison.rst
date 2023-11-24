@@ -59,8 +59,8 @@ Compare multiple experiments with each other
 6. You can optionally :ref:`save the plot in a desired format<Save the plot in a desired format>`
 
 
-Compare an experiment to the existing database
-----------------------------------------------
+Compare an experiment to the one existing database of drugs
+-----------------------------------------------------------
 
 3. Read the table with enrichment analysis results
 
@@ -103,12 +103,22 @@ Compare an experiment to the existing database
 
 5. Show the graph
 
+.. note::
+
+    Each point represents a sample, which in this context means a unique combination of drug, 
+    concentration, the duration of the treatment, the cell line used, and the running index of replicate. 
+    The origin point (0, 0) represents the effect of vehicle control, i.e. no changed kinase activities. 
+    If you hover over each point you can see the sample's name.
+
+
 .. code:: python
 
     >>> fig.show()
 
 .. raw:: html
     :file: ../../figures/comparison_input.html
+
+
 
 
 Save the plot in a desired format
