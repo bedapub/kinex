@@ -28,7 +28,7 @@ Here are few ways to install **kinex**
 
 ### From source
 
-1. Create and activate a pytion 3.11 conda venv:
+1. Create and activate a python 3.11 conda venv:
 
 ```
 conda create --name kinex

@@ -5,7 +5,7 @@ Requirements
 ------------
 
 * `conda <https://docs.conda.io/en/latest/miniconda.html>`__
-* python >=3.8
+* python 3.11
 
 .. Installation from Pip
 .. ---------------------
