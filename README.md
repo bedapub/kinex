@@ -20,7 +20,7 @@ Alexandra Valeanu and Jitao David Zhang with the input and help of many colleagu
 ## Requirements
 
 - [conda](https://docs.conda.io/en/latest/miniconda.html)
-- python >= 3.8
+- python 3.11
 
 ## Installation
 
@@ -28,12 +28,12 @@ Here are few ways to install **kinex**
 
 ### From source
 
-1. Create and activate a pytion 3.8+ conda venv:
+1. Create and activate a pytion 3.11 conda venv:
 
 ```
 conda create --name kinex
 conda activate kinex
-conda install python
+conda install python=3.11
 ```
 
 2. Download the package:

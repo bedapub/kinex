@@ -26,13 +26,13 @@ Requirements
 Installation from Source
 ------------------------
 
-1. Create and activate a python 3.8+ conda venv:
+1. Create and activate a python 3.11 conda venv:
 
 .. code:: bash
 
 	conda create --name kinex
 	conda activate kinex
-	conda install python
+	conda install python=3.11
 
 2. Download the package:
 
