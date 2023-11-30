@@ -14,10 +14,3 @@ This documentation includes the information about installation and usage of the 
 
    chapters/installation
    chapters/usage
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

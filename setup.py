@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="kinex",
-    version="0.0.1",
+    version="1.0.0",
     description="A python package to compute kinase scoring and enrichment",
     py_modules=["kinex"],
     package_dir={"": "src"},
@@ -14,6 +14,7 @@ setup(
         "scipy >= 1.10.0",
         "numpy >= 1.19.5",
         "nbformat>=4.2.0",
+        "pandas",
         "statsmodels",
         "plotly",
         "scikit-learn",
