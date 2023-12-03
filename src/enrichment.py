@@ -3,8 +3,8 @@ import pandas as pd
 import plotly.express as px
 from statsmodels.stats.multitest import multipletests
 
-from table2x2 import Table2x2
-from data import get_groups
+from kinex.table2x2 import Table2x2
+from kinex.data import get_groups
 
 
 class Enrichment:

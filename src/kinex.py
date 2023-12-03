@@ -1,23 +1,23 @@
 import pandas as pd
 import numpy as np
-import time
+# import time
 import bisect
 
-from functions import check_sequence, get_sequence_format, score
+from kinex.functions import check_sequence, get_sequence_format, score
 
-from data import get_pssm
+from kinex.data import get_pssm
 
-from score import Score
-from enrichment import Enrichment
-from comparison import Comparison
+from kinex.score import Score
+from kinex.enrichment import Enrichment
+from kinex.comparison import Comparison
 
-import logging
-logging.basicConfig(
-    filename="kinex.log",
-    level=logging.DEBUG,
-    format="%(asctime)s %(levelname)s %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
+# import logging
+# logging.basicConfig(
+#     filename="kinex.log",
+#     level=logging.ERROR,
+#     format="%(asctime)s %(levelname)s %(message)s",
+#     datefmt="%Y-%m-%d %H:%M:%S",
+# )
 
 
 class Kinex:
@@ -369,7 +369,7 @@ class Kinex:
             raise ValueError(
                 f"Method {method} is not supported. Supported methods: 'min', 'max', 'avg'")
 
-        start = time.perf_counter()
+        # start = time.perf_counter()
         df = input_sites.copy()
 
         df.iloc[:,0] = df.iloc[:,0].astype(str).str.replace('(ub)', '', regex=False).str.replace(
@@ -426,8 +426,8 @@ class Kinex:
             total_unregulated = np.min(
                 [total_upregulated, total_downregulated])/2
 
-        end = time.perf_counter()
-        logging.debug(f'{end-start}')
+        # end = time.perf_counter()
+        # logging.debug(f'{end-start}')
         # logging.debug(enrichment_table)
 
         return Enrichment(enrichment_table, df, failed_sites, total_upregulated, total_downregulated, total_unregulated, set(self.pssm.index))

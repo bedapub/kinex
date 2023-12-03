@@ -1,9 +1,9 @@
 import unittest
 import pandas as pd
 
-from src.kinex import Kinex
+from kinex.kinex import Kinex
 
-from tests.data import get_test_input_sites, get_test_pssm, get_test_scoring_matrix
+from kinex.tests.data import get_test_input_sites, get_test_pssm, get_test_scoring_matrix
 
 class TestKinex(unittest.TestCase):
 
