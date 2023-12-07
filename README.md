@@ -26,9 +26,25 @@ Alexandra Valeanu and Jitao David Zhang with the input and help of many colleagu
 
 Here are few ways to install **kinex**
 
+### From Conda
+
+1. Create and activate your conda environment
+
+```
+	conda create --name kinex
+	conda activate kinex
+```
+
+2. Install kinex package
+
+```
+	conda install -c bioconda kinex
+```
+
+
 ### From source
 
-1. Create and activate a python 3.11 conda venv:
+1. Create and activate a python 3.11 conda environment 
 
 ```
 conda create --name kinex

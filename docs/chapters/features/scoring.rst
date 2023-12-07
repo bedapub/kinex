@@ -1,7 +1,7 @@
-Get scores for a sequence
-=========================
+Get scores for a phospho-sequence
+=================================
 
-1. Score a given sequence and store the results.
+1. Score a given phospho-sequence and store the results
 
 .. code:: python
 
@@ -11,11 +11,11 @@ Get scores for a sequence
 
 .. note:: 
 
-    The supported format for a sequence\
+    The supported format for a phospho-sequence\
         - ``asterisk``: F_KQKAS*QSPQK
         - ``(ph)``: FKQKAS(ph)QSPQK
 
-2. Rank the kinases, for a given sequence, based on their percentile score.
+2. Rank the kinases for a given phospho-sequence based on their percentile score
 
 .. code:: python
 
@@ -54,7 +54,7 @@ Get scores for a sequence
     MNK2     8.275760   3.048892            97.455
     pandas.DataFrame
 
-4. Get median percentile. 
+4. Get median percentile (median score of kinases for a given phospho-sequence)
 
 .. code:: python
 
@@ -62,7 +62,7 @@ Get scores for a sequence
     63.493
     numpy.float64
 
-5. Get promiscuity index. By default, the limit is the 90th percentile.
+5. Get promiscuity index (the number of kinases scoring above the ``90th`` percentile)
 
 .. code:: python
 

@@ -23,10 +23,27 @@ Requirements
 
 .. 	pip install kinex
 
+Installation from Conda
+------------------------
+
+1. Create and activate your conda environment
+
+.. code:: bash
+
+	conda create --name kinex
+	conda activate kinex
+
+2. Install kinex package
+
+.. code:: bash
+
+	conda install -c bioconda kinex
+
+
 Installation from Source
 ------------------------
 
-1. Create and activate a python 3.11 conda venv:
+1. Create and activate a python 3.11 conda environment
 
 .. code:: bash
 
@@ -34,7 +51,7 @@ Installation from Source
 	conda activate kinex
 	conda install python=3.11
 
-2. Download the package:
+2. Download the package
 
 .. code:: bash
 

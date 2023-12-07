@@ -30,22 +30,13 @@ Import package and initialise data object
 
     You can optionally save the scoring matrix locally for future uses.
 
-    .. code:: bash
-
-        >>> ### Download scoring matrix of 82k pre-scored sites
-        >>> !mkdir scoring_matrix
-        >>> !wget https://zenodo.org/records/10201142/files/kinex_scoring_matrix_82k_sorted.csv.gzip?download=1 -O scoring_matrix/kinex_scoring_matrix_82k_sorted.csv.gzip
-        >>> !mv scoring_matrix/kinex_scoring_matrix_82k_sorted.csv.gzip scoring_matrix/kinex_scoring_matrix_82k_sorted.csv.gz
-        >>> !gunzip scoring_matrix/kinex_scoring_matrix_82k_sorted.csv.gz
-
     .. code:: python
 
-        >>> ### Read the scoring matrix from file
-        >>> scoring_matrix = pd.read_csv("scoring_matrix/scoring_matrix_82k_sorted.csv")
+        >>> scoring_matrix.to_csv("path/to/scoring_matrix.csv")
 
-    Or just download using the `link <https://zenodo.org/records/10201142/files/kinex_scoring_matrix_82k_sorted.csv.gzip?download=1>`_
+    Or just download using the link: `https://zenodo.org/records/10201142/files/kinex_scoring_matrix_82k_sorted.csv.gzip?download=1 <https://zenodo.org/records/10201142/files/kinex_scoring_matrix_82k_sorted.csv.gzip?download=1>`_
 
-3.  Create a kinex object.
+3.  Create a kinex object
 
 .. code:: python
 

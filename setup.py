@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="kinex",
-    version="1.0.1",
+    version="1.0.2",
     description="A python package to compute kinase scoring and enrichment",
     packages=["kinex", "kinex.data", "kinex.tests", "kinex.tests.data"],
     package_dir={"kinex": "src",

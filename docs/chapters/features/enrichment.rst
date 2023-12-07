@@ -1,7 +1,11 @@
-Kinases inference
-=================
+Kinases inference analysis
+==========================
 
-1. Read your input sequences file. Make sure to have on first column the sequences and on second column the log2 transformed Fold Change.
+1. Read your input file
+
+.. note:: 
+
+    Make sure to have the phospho-sequences on the first column and the log2 transformed Fold Change on the second column.
 
 .. code:: python
 
@@ -17,7 +21,16 @@ Kinases inference
     [464 rows x 2 columns]
     pandas.DataFrame
 
-2. Run enrichment analysis with your input phospho-sequences.
+.. note::
+
+    Data: CK2 catalytic sub-units knockdown
+
+
+2. Run enrichment analysis with your input phospho-sequences
+
+.. note:: 
+    
+    Supported methods are ``min``, ``max``, ``avg``, ``all``
 
 .. code:: python
 
@@ -28,7 +41,7 @@ Kinases inference
     Total number of unregulated phospho-sequences is: 309
     enrichment.Enrichment
 
-3. Access the total number of upregulated, downregulated and unregulated phospho-sequences. 
+3. Access the total number of up-regulated, down-regulated, and un-regulated phospho-sequences
 
 .. code:: python
 
@@ -42,7 +55,7 @@ Kinases inference
     309
     int
 
-4. Check the sites that were marked as failed. 
+4. Check the sites that were marked as failed
 
 .. code:: python
 
@@ -50,7 +63,7 @@ Kinases inference
     ['EKIGEGTyGVVYKGR', 'KPSIVTKyVESDDEK', 'LGQRIYQyIQSRFYR', 'INPGYDDyADSDEDQ', 'ADNDITPyLVSRFYR', 'RGEPNVSyICSRYYR']
     list
 
-5. Check the regulation of each sequence and top 15 kinases most likely to target each sequence
+5. Check the regulation of each phospho-sequence, and get the top 15 kinases most likely to target each phospho-sequence
 
 .. code:: python
 
@@ -65,7 +78,7 @@ Kinases inference
     [464 rows x 4 columns]
     pandas.DataFrame
 
-6. Show enrichment table.
+6. Show enrichment table
 
 .. code:: python
 
@@ -82,8 +95,12 @@ Kinases inference
     [303 rows x 19 columns]
     pandas.DataFrame
 
-7. Vulcano plot of enrichment vs p-value. Kinases are represented with colours corresponding to their class. 
+7. Vulcano plot of Enrichment Odds Ratio (EOR) and p-value
 
+.. note::
+
+    Kinases are represented with colours corresponding to their class. 
+    
 .. code:: python
 
     >>> fig = enrich.plot(use_adjusted_pval=False)
@@ -95,11 +112,14 @@ Kinases inference
 
 .. note::
 
-    Data: CK2 catalytic sub-units knockdown
+    You can update your figure (marker point, axis, legend, etc.) using Plotly’s functions:
+    `https://plotly.com/python/creating-and-updating-figures <https://plotly.com/python/creating-and-updating-figures>`_
 
 
 
-8. Save the figure in a desired format.
+
+
+8. Save the figure in a desired format
 
 
 - ``.html``

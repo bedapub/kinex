@@ -17,7 +17,7 @@ Drug comparison
 Compare multiple experiments with each other
 --------------------------------------------
 
-3. Specify the path to the tables
+3. Specify the path to your enrichment tables
 
 .. code:: python
 
@@ -26,7 +26,7 @@ Compare multiple experiments with each other
 
 .. note:: 
 
-    The directory should have multiple ``.csv`` files that contain enrichment analysis results from kinex
+    The directory should have multiple ``.csv`` files that contain enrichment analysis result tables from kinex
 
     .. code::
 
@@ -56,14 +56,19 @@ Compare multiple experiments with each other
     :file: ../../figures/comparison_multiple_drugs.html
 
 
+.. note::
+
+    You can update your figure (marker point, axis, legend, etc.) using Plotly’s functions:
+    `https://plotly.com/python/creating-and-updating-figures <https://plotly.com/python/creating-and-updating-figures>`_
+
+
 6. You can optionally :ref:`save the plot in a desired format<Save the plot in a desired format>`
 
 
-Compare an experiment to the one existing database of drugs
------------------------------------------------------------
+Compare an experiment to the existing collection of drug profiles
+-----------------------------------------------------------------
 
-3. Read the table with enrichment analysis results
-
+3. Read the enrichment analysis result table
 
 .. code:: python
 
@@ -98,7 +103,7 @@ Compare an experiment to the one existing database of drugs
 
 .. note:: 
 
-    Supported methods are UMAP, MDS and t-SNE
+    Supported methods are ``UMAP``, ``MDS``, and ``t-SNE``
 
 
 5. Show the graph
@@ -117,8 +122,6 @@ Compare an experiment to the one existing database of drugs
 
 .. raw:: html
     :file: ../../figures/comparison_input.html
-
-
 
 
 Save the plot in a desired format

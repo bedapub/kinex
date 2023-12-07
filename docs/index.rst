@@ -6,7 +6,12 @@
 Welcome to Kinex's documentation!
 =================================
 
-This documentation includes the information about installation and usage of the package
+Kinex is a workflow implemented in a Python package with the same name. Kinex infers causal kinases from phosphoproteomics data. 
+
+If you use Kinex, please cite Valeanu et. al, 2023, bioRxiv, doi: `https://doi.org/10.1101/2023.11.23.568445 <https://doi.org/10.1101/2023.11.23.568445>`_.
+
+This documentation includes the information about installation and usage of the package.
+
 
 .. toctree::
    :maxdepth: 3
