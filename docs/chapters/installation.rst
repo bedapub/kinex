@@ -63,4 +63,4 @@ Installation from Source
 
 .. code:: bash
 
-	pip install -e .
+	pip install .

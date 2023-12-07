@@ -62,7 +62,7 @@ cd kinex
 3. Install the package
 
 ```
-pip install -e .
+pip install .
 ```
 
 ## [Documentation](https://kinex.readthedocs.io/en/latest/)
