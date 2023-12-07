@@ -104,6 +104,7 @@ Kinases inference analysis
 .. code:: python
 
     >>> fig = enrich.plot(use_adjusted_pval=False)
+    >>> fig.show()
 
 
 .. raw:: html
