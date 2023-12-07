@@ -31,14 +31,14 @@ Here are few ways to install **kinex**
 1. Create and activate your conda environment
 
 ```
-	conda create --name kinex
-	conda activate kinex
+conda create --name kinex
+conda activate kinex
 ```
 
 2. Install kinex package
 
 ```
-	conda install -c bioconda kinex
+conda install -c bioconda kinex
 ```
 
 
