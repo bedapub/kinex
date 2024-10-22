@@ -5,13 +5,13 @@ Drug comparison
 
 .. code:: python
 
-    >>> from kinex import Comparison
+    from kinex import Comparison
 
 2. Initialize a Comparison object
 
 .. code:: python
 
-    >>> comp = Comparison()
+    comp = Comparison()
 
 
 Compare multiple experiments with each other
@@ -21,7 +21,7 @@ Compare multiple experiments with each other
 
 .. code:: python
 
-    >>> data_path = "path/to/your/tables"
+    data_path = "path/to/your/tables"
 
 
 .. note:: 
@@ -40,7 +40,7 @@ Compare multiple experiments with each other
 
 .. code:: python
 
-    >>> fig = comp.get_comparison(data_path=data_path, method='mds')
+    fig = comp.get_comparison(data_path=data_path, method='mds')
 
 .. note:: 
 
@@ -50,7 +50,7 @@ Compare multiple experiments with each other
 
 .. code:: python
 
-    >>> fig.show()
+    fig.show()
 
 .. raw:: html
     :file: ../../figures/comparison_multiple_drugs.html
@@ -72,7 +72,7 @@ Compare an experiment to the existing collection of drug profiles
 
 .. code:: python
 
-    >>> input_data = pd.read_csv('tables/table1.csv', index_col=0)
+    input_data = pd.read_csv('tables/table1.csv', index_col=0)
 
 .. note::
 
@@ -83,13 +83,7 @@ Compare an experiment to the existing collection of drug profiles
         dominant_enrichment_value_log2  dominant_p_value_log10_abs  
                              0.868162                    0.821932  
                             -0.785398                    0.707911  
-                            -0.934463                    0.901927  
-                            -1.369094                    0.000000  
-                            -1.474303                    0.000000  
-                                ...                         ...  
-                            -2.914661                    2.022525  
-                            -2.490535                    1.691968  
-                            -2.920072                    0.000000  
+                                ...                         ...    
                             -1.551978                    0.795959  
                             -2.986266                    1.521982  
 
@@ -99,7 +93,7 @@ Compare an experiment to the existing collection of drug profiles
 
 .. code:: python
 
-    >>> fig = comp.get_comparison(input_data=input_data, method='tsne')
+    fig = comp.get_comparison(input_data=input_data, method='tsne')
 
 .. note:: 
 
@@ -118,7 +112,7 @@ Compare an experiment to the existing collection of drug profiles
 
 .. code:: python
 
-    >>> fig.show()
+    fig.show()
 
 .. raw:: html
     :file: ../../figures/comparison_input.html
@@ -131,28 +125,28 @@ Save the plot in a desired format
 
 .. code:: python
     
-    >>> fig.write_html("path/to/file.html")
+    fig.write_html("path/to/file.html")
 
 - ``.svg``
 
 .. code:: python
 
-    >>> fig.write_image("images/fig1.svg")
+    fig.write_image("images/fig1.svg")
 
 - ``.pdf``
 
 .. code:: python
 
-    >>> fig.write_image("images/fig1.pdf")
+    fig.write_image("images/fig1.pdf")
 
 - ``.png``
 
 .. code:: python
 
-    >>> fig.write_image("images/fig1.png")
+    fig.write_image("images/fig1.png")
 
 - ``.jpeg``
 
 .. code:: python
 
-    >>> fig.write_image("images/fig1.jpeg")
+    fig.write_image("images/fig1.jpeg")
