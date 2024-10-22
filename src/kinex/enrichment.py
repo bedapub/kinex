@@ -3,46 +3,28 @@ import pandas as pd
 import plotly.express as px
 from statsmodels.stats.multitest import multipletests
 
+from kinex.sequence import SequenceType
 from kinex.table2x2 import Table2x2
-from kinex.data import get_groups
+from kinex.resources import get_ser_thr_family, get_ser_thr_family_colors, get_tyr_family, get_tyr_family_colors
 
 
 class Enrichment:
-    """
-    Enrichment results including all the necessary information for the input sites
+    def __init__(self, sequence_type: SequenceType, all_kinases: set):
+        self.sequence_type = sequence_type
+        self.total_upregulated = 0
+        self.total_downregulated = 0
+        self.total_unregulated = 0
+        self.regulation_list = []
+        self.top15_kinases_list = []
+        self.enrichment_table = pd.DataFrame(columns=['kinase', 'upregulated', 'downregulated', 'unregulated'])
+        self.all_kinases = all_kinases
 
-    Attributes
-    ----------
-    enrichment_table: pandas.DataFrame
-        Table containing enrichment analysis results. 
-    input_sites: pandas.DataFrame
-        A DataFrame containing the phosphosite sequences in the first column, logarithmised Fold Change in the second column, 
-        regulation in the third column, and top15 kinases most likely to target each sequence in the fourth column.
-    failed_sites: list
-        A list of the sites labeled invalid by the check_sequence function.
-    total_upregulated: int
-        Total number of upregulated phosphosites
-    total_downregulated: int
-        Total number of downregulated phosphosites
-    total_unregulated: int
-        Total number of unregulated phosphosites
+    def adjust_background_sites(self):
+        if self.total_unregulated == 0:
+            self.total_unregulated = np.min(
+                [self.total_upregulated, self.total_downregulated]) / 2
 
-    Methods
-    -------
-    plot(self, use_adjusted_pval: bool = False) -> None
-        Vulcano plot of the side displaying significant enrichment for each kinase vs the corresponding p-value.
-
-    """
-
-    def __init__(self, enrichment_table: pd.DataFrame, input_sites: pd.DataFrame, failed_sites: list, total_upregulated: int, total_downregulated: int, total_unregulated: int, all_kinases: set) -> None:
-
-        self.enrichment_table = enrichment_table
-        self.total_upregulated = total_upregulated
-        self.total_downregulated = total_downregulated
-        self.total_unregulated = total_unregulated
-        self.input_sites = input_sites
-        self.failed_sites = failed_sites
-
+    def fisher_statistics(self):
         new_columns = [
             "upregulated_enrichment_value",
             "upregulated_enrichment_value_log2",
@@ -85,9 +67,9 @@ class Enrichment:
                 upregulated_enrichment_value = 0
                 upregulated_p_value = 1
                 self.enrichment_table.loc[i,
-                                          "upregulated_enrichment_value_log2"] = 0
+                "upregulated_enrichment_value_log2"] = 0
                 self.enrichment_table.loc[i,
-                                          "upregulated_p_value_log10_abs"] = 0
+                "upregulated_p_value_log10_abs"] = 0
             else:
                 upregulated_contingency_table = Table2x2([[upregulated_hit, self.total_upregulated - upregulated_hit],
                                                           [unregulated_hit, self.total_unregulated - unregulated_hit]],
@@ -106,14 +88,15 @@ class Enrichment:
                 downregulated_enrichment_value = 0
                 downregulated_p_value = 1
                 self.enrichment_table.loc[i,
-                                          "downregulated_enrichment_value_log2"] = 0
+                "downregulated_enrichment_value_log2"] = 0
                 self.enrichment_table.loc[i,
-                                          "downregulated_p_value_log10_abs"] = 0
+                "downregulated_p_value_log10_abs"] = 0
             else:
-                downregulated_contingency_table = Table2x2([[downregulated_hit, total_downregulated - downregulated_hit],
-                                                            [unregulated_hit, total_unregulated - unregulated_hit]],
-                                                           shift_zeros=True
-                                                           )
+                downregulated_contingency_table = Table2x2(
+                    [[downregulated_hit, self.total_downregulated - downregulated_hit],
+                     [unregulated_hit, self.total_unregulated - unregulated_hit]],
+                    shift_zeros=True
+                )
                 downregulated_enrichment_value = downregulated_contingency_table.odds_ratio()
                 downregulated_p_value = downregulated_contingency_table.p_val(
                     mode="greater")
@@ -125,30 +108,30 @@ class Enrichment:
 
             # Set the enrichment and p values
             self.enrichment_table.loc[i,
-                                      "upregulated_enrichment_value"] = upregulated_enrichment_value
+            "upregulated_enrichment_value"] = upregulated_enrichment_value
             self.enrichment_table.loc[i,
-                                      "upregulated_p_value"] = upregulated_p_value
+            "upregulated_p_value"] = upregulated_p_value
 
             self.enrichment_table.loc[i,
-                                      "downregulated_enrichment_value"] = downregulated_enrichment_value
+            "downregulated_enrichment_value"] = downregulated_enrichment_value
             self.enrichment_table.loc[i,
-                                      "downregulated_p_value"] = downregulated_p_value
+            "downregulated_p_value"] = downregulated_p_value
 
             # Determine the dominant direction, either upregulated or downregulated.
             if upregulated_enrichment_value > downregulated_enrichment_value:
                 self.enrichment_table.loc[i,
-                                          "dominant_direction"] = "upregulated set"
+                "dominant_direction"] = "upregulated set"
                 self.enrichment_table.loc[i, "dominant_enrichment_value_log2"] = self.enrichment_table.loc[i,
-                                                                                                           "upregulated_enrichment_value_log2"]
+                "upregulated_enrichment_value_log2"]
                 self.enrichment_table.loc[i, "dominant_p_value_log10_abs"] = self.enrichment_table.loc[i,
-                                                                                                       "upregulated_p_value_log10_abs"]
+                "upregulated_p_value_log10_abs"]
             else:
                 self.enrichment_table.loc[i,
-                                          "dominant_direction"] = "downregulated set"
+                "dominant_direction"] = "downregulated set"
                 self.enrichment_table.loc[i, "dominant_enrichment_value_log2"] = self.enrichment_table.loc[i,
-                                                                                                           "downregulated_enrichment_value_log2"]
+                "downregulated_enrichment_value_log2"]
                 self.enrichment_table.loc[i, "dominant_p_value_log10_abs"] = self.enrichment_table.loc[i,
-                                                                                                       "downregulated_p_value_log10_abs"]
+                "downregulated_p_value_log10_abs"]
 
         # Calculate adjusted p values
         upregulated_adjusted_p_value = multipletests(
@@ -159,7 +142,6 @@ class Enrichment:
         self.enrichment_table["downregulated_adjusted_p_value"] = downregulated_adjusted_p_value[1]
 
         for i in range(len(self.enrichment_table)):
-
             # adjusted p values log10 abs and dominant adjusted p values log10 abs
             self.enrichment_table.loc[i, "upregulated_adjusted_p_value_log10_abs"] = np.absolute(
                 np.log10(self.enrichment_table.loc[i, "upregulated_adjusted_p_value"]))
@@ -168,72 +150,50 @@ class Enrichment:
 
             if self.enrichment_table.loc[i, "dominant_direction"] == "downregulated set":
                 self.enrichment_table.loc[i, "dominant_adjusted_p_value_log10_abs"] = self.enrichment_table.loc[i,
-                                                                                                                "downregulated_adjusted_p_value_log10_abs"]
+                "downregulated_adjusted_p_value_log10_abs"]
             elif self.enrichment_table.loc[i, "dominant_direction"] == "upregulated set":
                 self.enrichment_table.loc[i, "dominant_adjusted_p_value_log10_abs"] = self.enrichment_table.loc[i,
-                                                                                                                "upregulated_adjusted_p_value_log10_abs"]
+                "upregulated_adjusted_p_value_log10_abs"]
         self.enrichment_table = self.enrichment_table.set_index("kinase")
-        missing_kinases = list(all_kinases - set(self.enrichment_table.index))
+
+        missing_kinases = list(self.all_kinases - set(self.enrichment_table.index))
         self.enrichment_table = self.enrichment_table.reindex(
             self.enrichment_table.index.union(missing_kinases), fill_value=0)
 
-    def __repr__(self) -> str:
-        return f"Total number of upregulated phospho-sequences is: {self.total_upregulated}\nTotal number of downregulated phospho-sequences is: {self.total_downregulated}\nTotal number of unregulated phospho-sequences is: {self.total_unregulated}"
-
     def plot(self, use_adjusted_pval: bool = False):
-
-        kinase_family = get_groups()
+        match self.sequence_type:
+            case SequenceType.SER_THR:
+                kinase_family = get_ser_thr_family()
+                family_colors = get_ser_thr_family_colors()
+            case SequenceType.TYR:
+                kinase_family = get_tyr_family()
+                family_colors = get_tyr_family_colors()
+            case _:
+                raise ValueError(f"Invalid sequence type")
 
         family = []
-        plotting_table = self.enrichment_table[self.enrichment_table.dominant_p_value_log10_abs > 0.3]
-
-        for kinase in plotting_table.index:
+        for kinase in self.enrichment_table.index:
             family.append(kinase_family[kinase])
 
-        # Colors of the kinase groups which correspond to the ones from Johnson et al. https://doi.org/10.1038/s41586-022-05575-3
-        family_colors = {
-            "TKL": "#0400A9",
-            "STE": "#754391",
-            "CK1": "#499FD2",
-            "AGC": "#992B2C",
-            "CAMK": "#DE643A",
-            "Other": "#957C64",
-            "CMGC": "#2C643C",
-            "Alpha": "#C88AB5",
-            "PDHK": "#316D79",
-            "PIKK": "#020101",
-            "FAM20C": "#C22F7F"
-        }
         # Plot for 2 different cases: with and without adjusted p-val
         if use_adjusted_pval:
-            fig = px.scatter(
-                plotting_table,
-                x="dominant_enrichment_value_log2",
-                y="dominant_adjusted_p_value_log10_abs",
-                hover_name=plotting_table.index,
-                color=family,
-                text=plotting_table.index,
-                color_discrete_map=family_colors,  # Use the defined color mapping
-                category_orders={"family": [
-                    'TKL', 'STE', 'CK1', 'AGC', 'CAMK', 'Other', 'CMGC', 'Alpha', 'PDHK', 'PIKK', 'FAM20C']},
-                template="none"
-            )
+            y = "dominant_adjusted_p_value_log10_abs"
             y_axis_title = "-Log\u2081\u2080(adjusted p-value)"
-
         else:
-            fig = px.scatter(
-                plotting_table,
-                x="dominant_enrichment_value_log2",
-                y="dominant_p_value_log10_abs",
-                hover_name=plotting_table.index,
-                color=family,
-                text=plotting_table.index,
-                color_discrete_map=family_colors,  # Use the defined color mapping
-                category_orders={"family": [
-                    'TKL', 'STE', 'CK1', 'AGC', 'CAMK', 'Other', 'CMGC', 'Alpha', 'PDHK', 'PIKK', 'FAM20C']},
-                template="none"
-            )
+            y = "dominant_p_value_log10_abs"
             y_axis_title = "-Log\u2081\u2080(p-value)"
+
+        fig = px.scatter(
+            self.enrichment_table,
+            x="dominant_enrichment_value_log2",
+            y=y,
+            hover_name=self.enrichment_table.index,
+            color=family,
+            text=self.enrichment_table.index,
+            color_discrete_map=family_colors,  # Use the defined color mapping
+            # category_orders={"family": category_orders},
+            template="none"
+        )
 
         # add horizontal line at y = 1.3 which is absolute val of log10(0.05)
         fig.add_hline(
@@ -282,5 +242,4 @@ class Enrichment:
             width=600,
             height=600
         )
-#         fig.show()
         return fig

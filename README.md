@@ -1,15 +1,8 @@
-# Kinex
+# Kinex - Kinome Exploration Tool
 
-Alexandra Valeanu and Jitao David Zhang with the input and help of many colleagues
+**Kinex** is a Python package for infering causal kinases from phosphoproteomics data.
 
-**kinex** is a workflow implemented in a Python package with the same name. Kinex infers causal kinases from phosphoproteomics data.
-
-## Table of Contents
-
-- [Main Features](#main-features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Documentation](#documentation)
+Paper: Kinex infers causal kinases from phosphoproteomics data. https://doi.org/10.1101/2023.11.23.568445
 
 ## Main Features
 
@@ -24,47 +17,61 @@ Alexandra Valeanu and Jitao David Zhang with the input and help of many colleagu
 
 ## Installation
 
-Here are few ways to install **kinex**
-
 ### From Conda
 
-1. Create and activate your conda environment
-
 ```
+# Create and activate your conda environment
 conda create --name kinex
 conda activate kinex
-```
 
-2. Install kinex package
-
-```
+# Install kinex package
 conda install -c bioconda kinex
 ```
 
-
 ### From source
 
-1. Create and activate a python 3.11 conda environment 
-
 ```
+# Create and activate a python 3.11 conda environment 
 conda create --name kinex
 conda activate kinex
 conda install python=3.11
-```
 
-2. Download the package:
-
-```
+# Download the package:
 git clone git@github.com:bedapub/kinex.git
 cd kinex
-```
 
-3. Install the package
-
-```
+# Install the package
 pip install .
 ```
 
-## [Documentation](https://kinex.readthedocs.io/en/latest/)
+## Quick start
 
-You can find detailed [documentation](https://kinex.readthedocs.io/en/latest/) describing every feature of the package with examples and tutorials [here](https://kinex.readthedocs.io/en/latest/).
+1. Import package and create Kinex object
+```
+from kinex import Kinex
+import pandas as pd
+
+# Read scoring matrices from zenodo
+scoring_matrix_ser_thr = pd.read_csv("https://zenodo.org/records/13964893/files/scoring_matrix_ser_thr_82k_sorted.csv.gz?download=1", compression="gzip")
+scoring_matrix_tyr = pd.read_csv("https://zenodo.org/records/13964893/files/scoring_matrix_tyr_7k_sorted.csv.gz?download=1", compression="gzip")
+
+# Create Kinex object
+kinex = Kinex(scoring_matrix_ser_thr, scoring_matrix_tyr)
+```
+2. Score a sequence
+```
+sequence = "FVKQKAY*QSPQKQ"
+res = kinex.get_score(sequence)
+```
+
+3. Enrichment analysis
+```
+enrich = kinex.get_enrichment(input_sites, fc_threshold=1.5, phospho_priming=False, favorability=True, method="max")
+
+enrich.ser_thr.plot()
+enrich.tyr.plot()
+```
+
+## Documentation
+
+You can find detailed documentation describing every feature of the package with examples and tutorials [here](https://kinex.readthedocs.io/en/latest/).

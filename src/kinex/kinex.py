@@ -1,24 +1,17 @@
 import pandas as pd
 import numpy as np
-# import time
 import bisect
+from functools import reduce
 
-from kinex.functions import check_sequence, get_sequence_format, score
-
-from kinex.data import get_pssm
+from kinex.resources import get_pssm_ser_thr, get_pssm_tyr
 
 from kinex.score import Score
 from kinex.enrichment import Enrichment
-from kinex.comparison import Comparison
+from kinex.sequence import get_sequence_object, SequenceType
 
-# import logging
-# logging.basicConfig(
-#     filename="kinex.log",
-#     level=logging.ERROR,
-#     format="%(asctime)s %(levelname)s %(message)s",
-#     datefmt="%Y-%m-%d %H:%M:%S",
-# )
+from collections import namedtuple
 
+EnrichmentResults = namedtuple("EnrichmentResults", ["ser_thr", "tyr", "failed_sites"])
 
 class Kinex:
     """
@@ -26,24 +19,24 @@ class Kinex:
 
     Attributes
     ----------
-    pssm : pandas.DataFrame
+    pssm_ser_thr : pandas.DataFrame
         Normalised and scaled densiometries from PSPA experiments. 
         The table cotains on rows the kinases and on columns the positions for each aminoacid.
-    scoring_matrix : pandas.DataFrame
+    scoring_matrix_ser_thr : pandas.DataFrame
         Table containing 82,755 experimentally identified Ser/Thr phosphosites that have been scored by 303 Ser or Thr kinase PSSM.
-        The table allows the ranking of kinases, as well as the calculation of promiscuity index and median percentile for each input sequence.
+        The table allows the ranking of kinases, as well as the calculation of promiscuity index and median percentile for each input validation.
 
     Methods
     -------
-    get_score(self, sequence: str, phospho_priming: bool = False, favorability: bool = False, method: str = 'avg') -> score.Score
-        Checks the sequence format and it's validity; computes the scores and ranks the kinases.
+    get_score(self, validation: str, phospho_priming: bool = False, favorability: bool = False, method: str = 'avg') -> score.Score
+        Checks the validation format and it's validity; computes the scores and ranks the kinases.
     get_enrichment(self, input_sites: pd.DataFrame, fc_threshold: float = 1.5) -> enrichment.Enrichment
         Checks regulation and plots the the enrichment vs p-value. 
 
     Examples
     --------
     PSSM table
-    >>> kinex.pssm
+    >>> kinex.pssm_ser_thr
          kinase     -5P     -5G     -5A  ...      4E      4s      4t       4y
     0      AAK1  1.2242  0.4165  0.4825  ...  0.7777  0.4274  0.4274   0.4597
     1    ACVR2A  0.7057  0.8178  0.9920  ...  1.0888  1.1958  1.1958   1.0015
@@ -53,7 +46,7 @@ class Kinex:
     [303 rows x 208 columns]
 
     Scoring matrix
-    >>> kinex.scoring_matrix
+    >>> kinex.scoring_matrix_ser_thr
                          AAK1    ACVR2A    ACVR2B  ...      YSK1      YSK4       ZAK
     VDDEKGDSNDDYDSA -7.652375 -0.556483  0.382342  ... -4.315913 -1.380515 -2.494291
     YDSAGLLSDEDCMSV -3.490767 -0.142416  0.363835  ... -6.744147 -3.372538 -5.395429
@@ -66,66 +59,78 @@ class Kinex:
 
     """
 
-    def __init__(self, scoring_matrix: pd.DataFrame, pssm: pd.DataFrame = get_pssm()) -> None:
+    def __init__(self,
+                 scoring_matrix_ser_thr: pd.DataFrame,
+                 scoring_matrix_tyr: pd.DataFrame,
+                 pssm_ser_thr: pd.DataFrame = get_pssm_ser_thr(),
+                 pssm_tyr: pd.DataFrame = get_pssm_tyr()) -> None:
         """
         Initializes the instance of the Kinex class.
 
         Parameters
         ----------
-        pssm : pandas.DataFrame
+        pssm_ser_thr : pandas.DataFrame
             Normalised and scaled densiometries from PSPA experiments. 
             The table cotains on rows the kinases and on columns the positions for each aminoacid.
-        scoring_matrix : pandas.DataFrame
+        scoring_matrix_ser_thr : pandas.DataFrame
             Table containing 82,755 experimentally identified Ser/Thr phosphosites that have been scored by 303 Ser or Thr kinase PSSM.
-            The table allows the ranking of kinases, as well as the calculation of promiscuity index and median percentile for each input sequence.
+            The table allows the ranking of kinases, as well as the calculation of promiscuity index and median percentile for each input validation.
         """
-        self.pssm = pssm
 
-        self.scoring_matrix = {}
-        for col in scoring_matrix:
-            self.scoring_matrix[col] = scoring_matrix[col].to_list()
+        self.pssm_ser_thr = pssm_ser_thr
+        self.pssm_tyr = pssm_tyr
+
+        self.scoring_matrix_ser_thr = {col: scoring_matrix_ser_thr[col].to_list() for col in scoring_matrix_ser_thr}
+        self.scoring_matrix_ser_thr_length = len(scoring_matrix_ser_thr)
+
+        self.scoring_matrix_tyr = {col: scoring_matrix_tyr[col].to_list() for col in scoring_matrix_tyr}
+        self.scoring_matrix_tyr_length = len(scoring_matrix_tyr)
 
     def __repr__(self):
         return ""
 
-    def get_score(self, sequence: str, phospho_priming: bool = False, favorability: bool = False, method: str = 'avg') -> Score:
+    def get_score(self,
+                  sequence: str,
+                  phospho_priming: bool = False,
+                  favorability: bool = False,
+                  method: str = 'avg') -> Score:
         """
-        Checks the sequence format and it's validity.
+        Checks the validation format and it's validity.
         Computes the scores, the logarithmised scores, and ranks the kinases based on the 82,755 Ser/Thr phosphosites matrix.
 
         Parameters
         ----------
         sequence: str
-            A string representing a peptide sequence of the 20 natural aminoacids, plus pT and pY at 9 positions surrounding a Ser/Thr phospho-acceptor.
+            A string representing a peptide validation of the 20 natural aminoacids, plus pT and pY at 9 positions surrounding a Ser/Thr phospho-acceptor.
         phospho_priming: bool, default False
             Enable/Disable the phospo-priming option. 
         favorability: bool, default False
             Considers the favorability towards either Ser or Thr phospho-acceptor.
         method: str, default 'avg'
-            Accounts for multiple phosphorylation sites present in a sequence and considers either the max/min/average of the site scores. 
+            Accounts for multiple phosphorylation sites present in a validation and considers either the max/min/average of the site scores.
 
         Returns
         -------
         Score
-            Scoring result in form of an instance of the Score class containing sequence string, kinase ranking table, median percentile and methods 
+            Scoring result in form of an instance of the Score class containing validation string, kinase ranking table, median percentile and methods
             like promiscuity_index(limit) (returns a promiscuity index) and top(number) (returns a top {number} in kinase ranking).
 
         Examples
         --------
         Reading necessary tables
-        >>> pssm_table = pd.read_csv('./data/pssm_table.csv')
-        >>> scoring_matrix = pd.read_csv('./data/scoring_matrix.csv', index_col=0)
+        >>> pssm_table = pd.read_csv('resources/pssm_table_ser_thr.csv')
+        >>> scoring_matrix = pd.read_csv('kinex/resources/scoring_matrix.csv', index_col=0)
 
         Initializing Kinex class instance
-        >>> kinex = Kinex(pssm=pssm_table, scoring_matrix=scoring_matrix)
+        >>> kinex = Kinex(pssm_ser_thr=pssm_table, scoring_matrix_ser_thr=scoring_matrix)
 
         Calling get_score method and saving it in result variable
-        >>> result = kinex.get_score(sequence='GRNSLs*PVQA', phospho_priming=False, favorability=False)
+        >>> result = kinex.get_score(validation='GRNSLs*PVQA', phospho_priming=False, favorability=False)
         >>> result
         Scoring results for ['GRNSLs*PVQA']
 
-        Getting the sequence from scoring results
-        >>> result.sequence
+        Getting the validation from scoring results
+        >>> result.validation
         ['GRNSLs*PVQA']
 
         Kinase ranking
@@ -175,112 +180,63 @@ class Kinex:
         CDK7     9.678460   3.274777            86.048
         """
 
-        # start = time.perf_counter()
+        if len(sequence) < 3:
+            raise ValueError(f"Invalid sequence")
 
-        sequence_format = get_sequence_format(sequence)
-
-        # Check method and format
         if not method in ['min', 'max', 'avg', 'all']:
-            raise ValueError(
-                f"Method {method} is not supported. Supported methods: 'min', 'max', 'avg', 'all'")
+            raise ValueError(f"Method {method} is not supported. Supported methods: 'min', 'max', 'avg', 'all'")
 
-        if sequence_format == 'unsupported':
-            raise ValueError(
-                f"Sequence format is not supported. Supported formats: '*' and 'central'")
+        if not phospho_priming:
+            sequence = sequence.upper()
 
-        # Empty list for possible sequences
-        sequences = []
-        if sequence_format == '(ph)' or sequence_format == '*':
-            # Split the sequence to sub-sequences and count them
-            sequence = sequence.split(sequence_format)
-            num = len(sequence)
-            sequence_format = '*'
+        sequence_object = get_sequence_object(sequence)
+        sequence_object.preprocess_sequence()
+        sequence_object.validate_sequence()
 
-            # Make the last aminoacid lowercase
-            for id in range(num):
-                if not id == num - 1:
-                    sequence[id] = sequence[id][:-1] + \
-                        sequence[id][-1:].lower()
+        match sequence_object.sequence_type:
+            case SequenceType.SER_THR:
+                pssm = self.pssm_ser_thr
+                scoring_matrix = self.scoring_matrix_ser_thr
+                scoring_matrix_len = self.scoring_matrix_ser_thr_length
+            case SequenceType.TYR:
+                pssm = self.pssm_tyr
+                scoring_matrix = self.scoring_matrix_tyr
+                scoring_matrix_len = self.scoring_matrix_tyr_length
+            case _:
+                raise ValueError(f"Invalid sequence type")
 
-            # Make possible sequences
-            for id in range(num - 1):
-                seq = ''
-                for i in range(num):
-                    if i == id + 1:
-                        seq += "*"
-                    seq += sequence[i]
-                # Check the validity of subsequence. If invalid, go to next
-                if not check_sequence(seq, sequence_format):
-                    continue
-                sequences.append(seq)
+        scores_results = sequence_object.get_sequence_scores(pssm, favorability)
 
-            # If all the subsequences invalid -> sequence invalid
-            if len(sequences) == 0:
-                raise ValueError("Invalid sequence")
-            sequence = sequences
+        match method:
+            case 'min':
+                scores_results = pd.concat(scores_results)
+                scores_results = [scores_results.groupby(scores_results.index).min()]
+            case 'max':
+                scores_results = pd.concat(scores_results)
+                scores_results = [scores_results.groupby(scores_results.index).max()]
+            case 'avg':
+                scores_results = [
+                    reduce(lambda df1, df2: df1.add(df2, fill_value=0), scores_results) / len(scores_results)]
+            case 'all':
+                pass
 
-        # Empty dataframe to store scores
-        df = pd.DataFrame()
-        df_all = []
-        # Iterate through every sequence for asterisk format
-        if sequence_format == "*":
-            number_of_seq = len(sequence)
-            for id in range(number_of_seq):
-                if not phospho_priming:
-                    sequence[id] = sequence[id].upper()
-                if method == 'all':
-                    df_all.append(score(
-                        sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, favorability=favorability))
-                else:
-                    if id == 0:
-                        df = score(sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, favorability=favorability) / number_of_seq if method == 'avg' else score(
-                            sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, favorability=favorability)
-                    else:
-                        if method == 'avg':
-                            df = df.add(score(
-                                sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, favorability=favorability) / number_of_seq)
-                        else:
-                            df = pd.concat([df, score(
-                                sequence=sequence[id], sequence_format=sequence_format, pssm=self.pssm, favorability=favorability)])
-                            if method == 'min':
-                                df = df.groupby(df.index).min()
-                            elif method == 'max':
-                                df = df.groupby(df.index).max()
-
-        # Central format
-        elif sequence_format == 'central':
-            if not check_sequence(sequence, sequence_format):
-                raise ValueError("Invalid sequence")
-            if not phospho_priming:
-                sequence = sequence.upper()
-            df = score(sequence=sequence, sequence_format=sequence_format,
-                       pssm=self.pssm, favorability=favorability)
-            sequence = [sequence]
-
-        if not method == 'all':
-            df_all.append(df)
-
-        for table in df_all:
+        for table in scores_results:
             table.insert(1, "log_score", np.log2(table["score"]))
 
-            # Compute percentiles
             percentiles = []
             for kinase in table.index:
-                # Get the position of the kinase score within the 82755 scored reference sequences and divide it by 82755 to get the percentile score
-                percentile = (bisect.bisect_left(
-                    self.scoring_matrix[kinase], table.log_score[kinase]) + 1) * 100 / 82755
+                percentile = (bisect.bisect_left(scoring_matrix[kinase], table.log_score[kinase]) + 1) * (
+                        100 / scoring_matrix_len)
                 percentiles.append(percentile)
 
             table.insert(2, "percentile_score", percentiles)
             table.sort_values("percentile_score",
                               ascending=False, inplace=True)
 
-        # Debugging information
-        # end = time.perf_counter()
-        # logging.debug(f'{sequence}, {end-start}')
-        return Score(sequence, df_all)
+        return Score(sequence_object, scores_results)
 
-    def get_enrichment(self, input_sites: pd.DataFrame, fc_threshold: float = 1.5, phospho_priming: bool = False, favorability: bool = False, method: str = 'avg'):
+    def get_enrichment(self, input_sites: pd.DataFrame, fc_threshold: float = 1.5, phospho_priming: bool = False,
+                       favorability: bool = False, method: str = 'avg'):
         """
         Counts the number of up/down/unregulated phosphosite sequences. 
         Using one-sided Fisher exact test determines the kinase enrichment.
@@ -302,12 +258,12 @@ class Kinex:
         Examples
         --------
         Reading necessary tables
-        >>> pssm_table = pd.read_csv('./data/pssm_table.csv')
-        >>> scoring_matrix = pd.read_csv('./data/scoring_matrix.csv', index_col=0)
-        >>> input_sites = pd.read_csv('data/fam20c_cut.csv', sep='\t')
+        >>> pssm_table = pd.read_csv('resources/pssm_table_ser_thr.csv')
+        >>> scoring_matrix = pd.read_csv('kinex/resources/scoring_matrix.csv', index_col=0)
+        >>> input_sites = pd.read_csv('kinex/resources/fam20c_cut.csv', sep='\t')
 
         Initializing Kinex class instance
-        >>> kinex = Kinex(pssm=pssm_table, scoring_matrix=scoring_matrix)
+        >>> kinex = Kinex(pssm_ser_thr=pssm_table, scoring_matrix_ser_thr=scoring_matrix)
 
         Calling get_score method and saving it inside of a variable
         >>> result = kinex.get_enrichment(input_sites=input_sites, fc_threshold=1.0)
@@ -366,68 +322,60 @@ class Kinex:
         """
 
         if not method in ['min', 'max', 'avg']:
-            raise ValueError(
-                f"Method {method} is not supported. Supported methods: 'min', 'max', 'avg'")
+            raise ValueError(f"Method {method} is not supported. Supported methods: 'min', 'max', 'avg'")
 
-        # start = time.perf_counter()
-        df = input_sites.copy()
-
-        df.iloc[:,0] = df.iloc[:,0].astype(str).str.replace('(ub)', '', regex=False).str.replace(
+        input_sites_copy = input_sites.copy()
+        input_sites_copy.iloc[:, 0] = input_sites_copy.iloc[:, 0].astype(str).str.replace('(ub)', '',
+                                                                                          regex=False).str.replace(
             '(ox)', '', regex=False).str.replace('(ac)', '', regex=False).str.replace('(de)', '', regex=False)
 
-        # Empty DataFrame to store the output
-        enrichment_table = pd.DataFrame(
-            columns=['kinase', 'upregulated', 'downregulated', 'unregulated'])
+        ser_thr_enrichment = Enrichment(SequenceType.SER_THR, set(self.pssm_ser_thr.index))
+        tyr_enrichment = Enrichment(SequenceType.TYR, set(self.pssm_tyr.index))
 
-#         logging.debug(enrichment_table)
-
-        total_upregulated = total_downregulated = total_unregulated = 0
-        regulation_list = []
         failed_sites = []
-        top15_kinases_list = []
 
-        for id in range(len(df)):
-            # Get top 15 kinases, check if site is valid
-            # logging.debug(f"Scoring {df.iloc[id, 0]} : {id}/{len(df) - 1}")
+        for id in range(len(input_sites_copy)):
             try:
-                top15_kinases = self.get_score(sequence=str(
-                    df.iloc[id, 0]), phospho_priming=phospho_priming, favorability=favorability, method=method).top(15).index
+                score_result = self.get_score(sequence=str(
+                    input_sites_copy.iloc[id, 0]), phospho_priming=phospho_priming, favorability=favorability,
+                    method=method)
             except ValueError:
-                # logging.warning(f"Scoring of {df.iloc[id, 0]} failed")
-                failed_sites.append(df.iloc[id, 0])
-                regulation_list.append('failed')
-                top15_kinases_list.append("")
+                failed_sites.append(input_sites_copy.iloc[id, 0])
                 continue
 
+            match score_result.sequence.sequence_type:
+                case SequenceType.SER_THR:
+                    enrichment_object = ser_thr_enrichment
+                case SequenceType.TYR:
+                    enrichment_object = tyr_enrichment
+                case _:
+                    failed_sites.append(input_sites_copy.iloc[id, 0])
+                    continue
+
             regulation = ""
-            if float(str(df.iloc[id, 1])) >= fc_threshold:
+            if float(str(input_sites_copy.iloc[id, 1])) >= fc_threshold:
                 regulation = "upregulated"
-                total_upregulated += 1
-            elif float(str(df.iloc[id, 1])) <= -fc_threshold:
+                enrichment_object.total_upregulated += 1
+            elif float(str(input_sites_copy.iloc[id, 1])) <= -fc_threshold:
                 regulation = "downregulated"
-                total_downregulated += 1
-            elif float(str(df.iloc[id, 1])) < fc_threshold:
+                enrichment_object.total_downregulated += 1
+            elif float(str(input_sites_copy.iloc[id, 1])) < fc_threshold:
                 regulation = "unregulated"
-                total_unregulated += 1
+                enrichment_object.total_unregulated += 1
 
-            regulation_list.append(regulation)
-            top15_kinases_list.append(",".join(top15_kinases))
+            top15_kinases = score_result.top(15)[0].index
+            enrichment_object.regulation_list.append(regulation)
+            enrichment_object.top15_kinases_list.append(",".join(top15_kinases))
 
-            enrichment_table = pd.concat([enrichment_table, pd.DataFrame(
-                {"kinase": top15_kinases, regulation: np.ones(len(top15_kinases))})]).groupby('kinase').sum(numeric_only=False).reset_index()
+            enrichment_object.enrichment_table = pd.concat([enrichment_object.enrichment_table, pd.DataFrame(
+                {"kinase": top15_kinases, regulation: np.ones(len(top15_kinases))})]).groupby('kinase').sum(
+                numeric_only=False).reset_index()
 
-        # Add regulation column to input_sites table
-        df.insert(2, 'regulation', regulation_list)
-        df.insert(3, 'top15_kinases', top15_kinases_list)
-
-        # TODO think about background adjustment
         # Background adjustment
-        if total_unregulated == 0:
-            total_unregulated = np.min(
-                [total_upregulated, total_downregulated])/2
+        ser_thr_enrichment.adjust_background_sites()
+        tyr_enrichment.adjust_background_sites()
 
-        # end = time.perf_counter()
-        # logging.debug(f'{end-start}')
-        # logging.debug(enrichment_table)
+        ser_thr_enrichment.fisher_statistics()
+        tyr_enrichment.fisher_statistics()
 
-        return Enrichment(enrichment_table, df, failed_sites, total_upregulated, total_downregulated, total_unregulated, set(self.pssm.index))
+        return EnrichmentResults(ser_thr_enrichment, tyr_enrichment, failed_sites)
