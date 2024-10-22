@@ -12,10 +12,12 @@ If you use Kinex, please cite Valeanu et. al, 2023, bioRxiv, doi: `https://doi.o
 
 This documentation includes the information about installation and usage of the package.
 
-
 .. toctree::
-   :maxdepth: 3
-   :caption: Contents:
+   :maxdepth: 2
+   :caption: User Guide
 
    chapters/installation
-   chapters/usage
+   chapters/features/usage
+   chapters/features/scoring
+   chapters/features/enrichment
+   chapters/features/comparison

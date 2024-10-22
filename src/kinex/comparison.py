@@ -8,7 +8,7 @@ from umap import UMAP
 import plotly.express as px
 import plotly.graph_objects as go
 from kinex.functions import get_distances
-from kinex.data import get_experiments
+from kinex.resources import get_experiments
 
 class Comparison:
     """
