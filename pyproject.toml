@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kinex"
-version = "1.1.1"
+version = "1.1.0"
 description = "A python package to compute kinase scoring and enrichment"
 authors = [
     { name = "Alexandra Valeanu", email = "valeanualexandra17@gmail.com" }
@@ -30,3 +30,9 @@ dev = [
 
 [tool.setuptools]
 package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+kinex = ["resources/*.csv", "resources/*.json"]
