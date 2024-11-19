@@ -7,3 +7,4 @@ plotly
 scikit-learn
 umap-learn
 importlib-resources
+tomli
