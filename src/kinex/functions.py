@@ -240,10 +240,6 @@ def get_distances(experiment1, experiment2):
     return np.power(np.power(enrich, 2) + np.power(p_val, 2), 0.5)
 
 
-import requests
-from importlib import resources
-from pathlib import Path
-
 def download_file_to_resource(url: str, resource_name: str) -> None:
     """
     Downloads a file from a given URL and saves it to the specified resource path.
