@@ -1,46 +1,47 @@
-Import package and initialise Kinex 
+Import Package and Initialize Kinex 
 ===================================
 
-1. Import kinex
+1. **Import Kinex**
 
 .. code:: python
 
-	from kinex import Kinex
+    from kinex import Kinex
 
-2. Read the scoring matrix
+2. **Create a Kinex Object**
 
-.. code:: python
+- With Predefined Matrices:
 
-    scoring_matrix_ser_thr = pd.read_csv("https://zenodo.org/records/13964893/files/scoring_matrix_ser_thr_82k_sorted.csv.gz?download=1", compression="gzip")
-    scoring_matrix_tyr = pd.read_csv("https://zenodo.org/records/13964893/files/scoring_matrix_tyr_7k_sorted.csv.gz?download=1", compression="gzip")
-    scoring_matrix_ser_thr
+It will look in the resources to find the matrices. If it doesn't find them, it will download them and save them for future use.
 
 .. code:: python
 
-                AAK1    ACVR2A  ...      YSK4       ZAK
-    0     -11.147481 -6.325340  ... -6.723077 -7.402360
-    1     -10.421859 -6.178601  ... -6.343452 -7.373478
-    ...          ...       ...  ...
-    82753   8.074270  7.289390  ...  4.525527  4.837377
-    82754   8.623180  7.871226  ...  4.869195  5.062391
+    kinex = Kinex()
 
-    [82755 rows x 303 columns]
+- With Your Custom Matrices:
+
+.. code:: python
+
+    scoring_matrix_ser_thr = pd.read_csv("path/to/scoring_matrix_ser_thr.csv")
+    scoring_matrix_tyr = pd.read_csv("path/to/scoring_matrix_tyr.csv")
+
+    kinex = Kinex(scoring_matrix_ser_thr, scoring_matrix_tyr)
 
 .. note::
 
-    You can optionally save the scoring matrix locally for faster use in the future.
+    The matrix looks like this:
 
     .. code:: python
 
-        scoring_matrix_ser_thr.to_csv("scoring_matrix_ser_thr.csv")
-        scoring_matrix_tyr.to_csv("scoring_matrix_tyr.csv")
+                      AAK1    ACVR2A  ...      YSK4       ZAK
+        0     -11.147481 -6.325340  ... -6.723077 -7.402360
+        1     -10.421859 -6.178601  ... -6.343452 -7.373478
+        ...          ...       ...  ...
+        82753   8.074270  7.289390  ...  4.525527  4.837377
+        82754   8.623180  7.871226  ...  4.869195  5.062391
 
-    Or just download using the links: 
-    `https://zenodo.org/records/13964893/files/scoring_matrix_ser_thr_82k_sorted.csv.gz?download=1 <https://zenodo.org/records/13964893/files/scoring_matrix_ser_thr_82k_sorted.csv.gz?download=1>`_
-    `https://zenodo.org/records/13964893/files/scoring_matrix_tyr_7k_sorted.csv.gz?download=1 <https://zenodo.org/records/13964893/files/scoring_matrix_tyr_7k_sorted.csv.gz?download=1>`_
+.. note::
 
-3.  Create a kinex object
+    Predefined matrices can be found here:
 
-.. code:: python
-
-    kinex = Kinex(scoring_matrix_ser_thr, scoring_matrix_tyr)
+    - `Scoring Matrix for Serine/Threonine <https://zenodo.org/records/13964893/files/scoring_matrix_ser_thr_82k_sorted.csv.gz?download=1>`_
+    - `Scoring Matrix for Tyrosine <https://zenodo.org/records/13964893/files/scoring_matrix_tyr_7k_sorted.csv.gz?download=1>`_
