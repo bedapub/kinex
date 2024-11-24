@@ -55,3 +55,7 @@ def get_scoring_matrix_tyr() -> pd.DataFrame:
             return pd.read_csv(file_path, compression='gzip')
     except FileNotFoundError:
         return None
+
+def get_configuration_file() -> dict:
+    with resources.files("kinex.resources").joinpath("config.json").open() as json_file:
+        return json.load(json_file)

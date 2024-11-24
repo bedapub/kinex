@@ -20,7 +20,7 @@ dependencies = [
     "scikit-learn",
     "umap-learn",
     "importlib-resources",
-    "tomli",
+    "requests",
 ]
 
 [project.optional-dependencies]
@@ -28,10 +28,6 @@ dev = [
     "sphinx",
     "furo"
 ]
-
-[project.urls]
-scoring_matrix_ser_thr = "https://zenodo.org/records/13964893/files/scoring_matrix_ser_thr_82k_sorted.csv.gz?download=1"
-scoring_matrix_tyr = "https://zenodo.org/records/13964893/files/scoring_matrix_tyr_7k_sorted.csv.gz?download=1"
 
 
 [tool.setuptools]
