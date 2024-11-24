@@ -372,7 +372,7 @@ class Kinex:
 
         [108 rows x 3 columns]
 
-        The list of the phosphosites that did't pass the valudation
+        The list of the phosphosites that didn't pass the validation
         >>> result.failed_sites
         ['LQVKIPSKEEEsAD']
         """
