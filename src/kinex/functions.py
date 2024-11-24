@@ -1,10 +1,8 @@
 import requests
 from importlib import resources
-from math import pow, sqrt
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
 def get_sequence_format(sequence: str) -> str:
     """
