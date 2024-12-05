@@ -1,17 +1,21 @@
-import pandas as pd
-import numpy as np
 import bisect
+from collections import namedtuple
 from functools import reduce
 
-from kinex.resources import get_pssm_ser_thr, get_pssm_tyr
+import numpy as np
+import pandas as pd
 
+from kinex.functions import download_file_to_resource
+from kinex.resources import get_pssm_ser_thr, get_pssm_tyr, get_scoring_matrix_ser_thr, get_scoring_matrix_tyr, get_configuration_file
 from kinex.score import Score
 from kinex.enrichment import Enrichment
 from kinex.sequence import get_sequence_object, SequenceType
 
-from collections import namedtuple
-
 EnrichmentResults = namedtuple("EnrichmentResults", ["ser_thr", "tyr", "failed_sites"])
+
+
+# Load the pyproject.toml file
+config = get_configuration_file()
 
 class Kinex:
     """
@@ -60,8 +64,8 @@ class Kinex:
     """
 
     def __init__(self,
-                 scoring_matrix_ser_thr: pd.DataFrame,
-                 scoring_matrix_tyr: pd.DataFrame,
+                 scoring_matrix_ser_thr: pd.DataFrame = None,
+                 scoring_matrix_tyr: pd.DataFrame = None,
                  pssm_ser_thr: pd.DataFrame = get_pssm_ser_thr(),
                  pssm_tyr: pd.DataFrame = get_pssm_tyr()) -> None:
         """
@@ -70,12 +74,30 @@ class Kinex:
         Parameters
         ----------
         pssm_ser_thr : pandas.DataFrame
-            Normalised and scaled densiometries from PSPA experiments. 
+            Normalized and scaled densiometries from PSPA experiments. 
             The table cotains on rows the kinases and on columns the positions for each aminoacid.
         scoring_matrix_ser_thr : pandas.DataFrame
             Table containing 82,755 experimentally identified Ser/Thr phosphosites that have been scored by 303 Ser or Thr kinase PSSM.
             The table allows the ranking of kinases, as well as the calculation of promiscuity index and median percentile for each input validation.
         """
+        
+        # Matrix is not provided
+        if scoring_matrix_ser_thr is None:
+            # Trying to look for the matrix in the resources
+            scoring_matrix_ser_thr = get_scoring_matrix_ser_thr()
+            # Matrix is not provided and not found in the resources, download the default matrix
+            if scoring_matrix_ser_thr is None:
+                scoring_matrix_ser_thr_url = config["urls"]["scoring_matrix_ser_thr"]
+                download_file_to_resource(scoring_matrix_ser_thr_url, 'default_scoring_matrix_ser_thr.csv.gz')
+                scoring_matrix_ser_thr = get_scoring_matrix_ser_thr()
+                        
+        
+        if scoring_matrix_tyr is None:
+            scoring_matrix_tyr = get_scoring_matrix_tyr()
+            if scoring_matrix_tyr is None:
+                scoring_matrix_tyr_url = config["urls"]["scoring_matrix_tyr"]
+                download_file_to_resource(scoring_matrix_tyr_url, 'default_scoring_matrix_tyr.csv.gz')
+                scoring_matrix_tyr = get_scoring_matrix_tyr()
 
         self.pssm_ser_thr = pssm_ser_thr
         self.pssm_tyr = pssm_tyr

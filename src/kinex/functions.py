@@ -1,7 +1,10 @@
-import pandas as pd
-import numpy as np
-from math import sqrt, pow
+import requests
+from importlib import resources
+from math import pow, sqrt
+from pathlib import Path
 
+import numpy as np
+import pandas as pd
 
 def get_sequence_format(sequence: str) -> str:
     """
@@ -235,3 +238,50 @@ def get_distances(experiment1, experiment2):
     p_val = np.array(experiment1['dominant_p_value_log10_abs']) - \
         np.array(experiment2['dominant_p_value_log10_abs'])
     return np.power(np.power(enrich, 2) + np.power(p_val, 2), 0.5)
+
+
+def download_file_to_resource(url: str, resource_name: str) -> None:
+    """
+    Downloads a file from a given URL and saves it to the specified resource path.
+
+    Parameters:
+    ----------
+    url : str
+        The URL of the file to be downloaded.
+    resource_name : str
+        The name of the resource file to save (e.g., "default_scoring_matrix_tyr.csv.gz").
+
+    Raises:
+    -------
+    ValueError:
+        If the URL or resource details are invalid.
+    requests.exceptions.RequestException:
+        If there are issues with the HTTP request (e.g., network error, 404).
+    IOError:
+        If there's an error saving the file.
+    """
+    try:     
+        # Determine the file save path using importlib.resources
+        with resources.path("kinex.resources", resource_name) as file_path:
+            save_path = Path(file_path)
+
+        print(f"Starting download from: {url}")
+        response = requests.get(url, stream=True, timeout=10)
+        
+        # Raise an error for HTTP codes 4xx/5xx
+        response.raise_for_status()
+        
+        
+        with open(save_path, "wb") as file:
+            file.write(response.content)
+        
+        print(f"File successfully downloaded and saved to: {save_path}")
+    
+    except requests.exceptions.MissingSchema:
+        raise ValueError("The provided URL is not valid.")
+    except requests.exceptions.RequestException as e:
+        print(f"Error during file download: {e}")
+        raise
+    except IOError as e:
+        print(f"Error saving the file to {save_path}: {e}")
+        raise

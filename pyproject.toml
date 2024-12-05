@@ -19,7 +19,8 @@ dependencies = [
     "plotly",
     "scikit-learn",
     "umap-learn",
-    "importlib-resources"
+    "importlib-resources",
+    "requests",
 ]
 
 [project.optional-dependencies]
@@ -27,6 +28,7 @@ dev = [
     "sphinx",
     "furo"
 ]
+
 
 [tool.setuptools]
 package-dir = { "" = "src" }
