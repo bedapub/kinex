@@ -270,3 +270,7 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,macos,linux,windows
+
+
+default_scoring_matrix_ser_thr.csv.gz
+default_scoring_matrix_tyr.csv.gz

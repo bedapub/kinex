@@ -27,6 +27,7 @@ class Table2x2:
         if self.shift_zeros:
             if 0 in self.table:
                 self.table = np.add(self.table, 0.5)
+        self.check_zeros()
 
     def __repr__(self):
         return f'{self.table}'
@@ -60,8 +61,11 @@ class Table2x2:
             raise ValueError("Wrong shift_zeros format")
 
     def odds_ratio(self) -> float:
-
         return (self.table[0][0] * self.table[1][1] / (self.table[0][1] * self.table[1][0]))
 
     def p_val(self, mode) -> float:
         return fisher_exact(self.table, alternative=mode).pvalue
+    
+    def check_zeros(self) -> None:
+        if not self.shift_zeros and 0 in self.table:
+            raise ValueError("Table contains zeros and shift_zeros is set to False")

@@ -8,6 +8,8 @@ allowed_characters = {
 
 
 def is_central_sequence_valid(sequence_string: str) -> bool:
+    if not isinstance(sequence_string, str):
+        return False
     if sequence_string[len(sequence_string) // 2] not in ("S", "T", "Y", "s", "t", "y"):
         return False
     for aminoacid in sequence_string:
@@ -17,6 +19,8 @@ def is_central_sequence_valid(sequence_string: str) -> bool:
 
 
 def is_separator_sequence_valid(sequence_string: str, separator: str) -> bool:
+    if separator not in [sep.value for sep in SequenceSeparator]:
+        return False
     if separator * 2 in sequence_string:
         return False
 
@@ -30,7 +34,7 @@ def is_separator_sequence_valid(sequence_string: str, separator: str) -> bool:
     return True
 
 
-def get_valid_patterns(separator):
+def get_valid_patterns(separator: str):
     return [
         f"S{separator}",
         f"T{separator}",
@@ -44,6 +48,7 @@ def get_valid_patterns(separator):
 class SequenceSeparator(Enum):
     ASTERISK = "*"
     PH = "(ph)"
+    PH_CAPITAL = "(PH)"
 
 
 class SequenceType(Enum):

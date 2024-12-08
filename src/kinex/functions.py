@@ -1,10 +1,8 @@
 import requests
 from importlib import resources
-from math import pow, sqrt
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
 def get_sequence_format(sequence: str) -> str:
     """
@@ -104,140 +102,36 @@ def check_sequence(sequence: str, sequence_format: str) -> bool:
                 return False
     return True
 
-
-def get_columns(sequence: str, sequence_format: str = "*") -> list:
+def get_distances(experiment1: dict, experiment2: dict) -> np.ndarray:
     """
-    Makes a list of column names based on the aminoacid and position in the input sequence. 
-    With the phospho-priming option, it includes the phsopho-residues in the phospho-acceptor's vicinity. 
-
-    Parameters
-    ----------
-    sequence : str
-        Phosphosite sequence
-    sequence_format : str, default '*'
-        Specify which sequence format to use: '*' or 'central'
-
-    Returns
-    -------
-    list
-        List of strings corresponding to the PSSM columns names, based on the position-aminoacid relation in the input sequence.
-
-    Example
-    -------
-    >>> get_columns(sequence='GRNtSLs*PVQA', sequence_format="*", phospho_priming=True)
-    ['-5R', '-4N', '-3t', '-2S', '-1L', '1P', '2V', '3Q', '4A']
+    
+    Calculate the Euclidean distance between two experiments based on their
+    dominant enrichment and p-value scores.
+    
     """
+    
+    # Validate input keys
+    required_keys = ['dominant_enrichment_value_log2', 'dominant_p_value_log10_abs']
+    for key in required_keys:
+        if key not in experiment1 or key not in experiment2:
+            raise ValueError(f"Both experiments must contain the key '{key}'.")
 
-    sequence_length = len(sequence)
-    column = []
-    part_id = 0
+    # Convert input values to NumPy arrays
+    enrich1 = np.array(experiment1['dominant_enrichment_value_log2'])
+    enrich2 = np.array(experiment2['dominant_enrichment_value_log2'])
+    p_val1 = np.array(experiment1['dominant_p_value_log10_abs'])
+    p_val2 = np.array(experiment2['dominant_p_value_log10_abs'])
 
-    if sequence_format == "central":
-        parts = [
-            sequence[: sequence_length // 2],
-            sequence[sequence_length // 2 + 1:],
-        ]  # split the word in half
-        for part in parts:  # take first half and second half of the word
-            if part_id == 0:
-                part = part[::-1]  # remove the S or T from position 0
-            for position, aminoacid in enumerate(part):
-                if (
-                    aminoacid == "_" or aminoacid == "X"
-                ):  # jump over a missing character ("_") or trucation ("X").
-                    continue
-                if part_id == 0:
-                    pos = (position + 1) * (-1)
-                else:
-                    pos = position + 1
-                if pos in range(-5, 5):
-                    column.append(f"{pos}{aminoacid}")
-            part_id += 1
-    elif sequence_format == "*":
-        parts = sequence.split("*")
-        for part in parts:  # take first half and second half of the word
-            if part_id == 0:
-                part = part[::-1][1:]  # remove the S or T from position 0
-            for position, aminoacid in enumerate(part):
-                if (
-                    aminoacid == "_" or aminoacid == "X"
-                ):  # jump over a missing character ("_") or trucation ("X").
-                    continue
-                if part_id == 0:
-                    pos = (position + 1) * (-1)
-                else:
-                    pos = position + 1
-                if pos in range(-5, 5):
-                    column.append(f"{pos}{aminoacid}")
-            part_id += 1
+    # Ensure arrays have the same length
+    if enrich1.shape != enrich2.shape or p_val1.shape != p_val2.shape:
+        raise ValueError("The arrays in the two experiments must have the same shape.")
 
-    return sorted(column, key=lambda item: int(item[:-1]))
-
-
-def score(sequence: str, sequence_format: str, pssm: pd.DataFrame, favorability: bool = False) -> pd.DataFrame:
-    """
-    Computes the scores for each of the 303 kinases present in the PSSM table using the list of columns returned by get_columns function.  
-
-    Parameters
-    ----------
-    sequence : str
-        Phosphosite sequence
-    sequence_format : str, default '*'
-        Specify which sequence format to use: '*' or 'central'
-    pssm: pandas.DataFrame
-        Position Specific Score Matrix of 303 Ser/Thr kinases
-    favorability: bool, default False
-        Enable/Disable phospho-acceptor favorability
-
-    Returns
-    -------
-    pandas.DataFrame
-        A table of length 303 with index column 'kinase' and a 'score' column containing the calculated scores.
-
-    Example
-    -------
-    >>> score(sequence='EGRNSLS*PVQATQ', sequence_format='*', pssm=pssm, phospho_priming=False, favorability=False)
-                score
-    kinase           
-    NLK      8.432319
-    JNK3    19.764808
-    CDK4    12.719801
-    SMG1     1.286346
-    JNK1    19.502893
-    ...           ...
-    TLK2     0.056653
-    RAF1     0.132770
-    PASK     0.118487
-    CDC7     0.160988
-    TLK1     0.024576
-
-    [303 rows x 1 columns]
-    """
-    pssm = pssm.reset_index()
-
-    columns = get_columns(
-        sequence, sequence_format)
-    columns.append("kinase")
-
-    if favorability == True:
-        seq_upper = sequence.upper()
-        if seq_upper[len(sequence) // 2] == "S" or "S*" in seq_upper:
-            columns.append("0S")
-        elif seq_upper[len(sequence) // 2] == "T" or "T*" in seq_upper:
-            columns.append("0T")
-
-    df = pssm[columns]
-    df.insert(0, "score", df.prod(axis=1, numeric_only=True))
-    df = df[["kinase", "score"]]
-    df = df.set_index("kinase")
-    return df
-
-
-def get_distances(experiment1, experiment2):
-    enrich = np.array(experiment1['dominant_enrichment_value_log2']) - \
-        np.array(experiment2['dominant_enrichment_value_log2'])
-    p_val = np.array(experiment1['dominant_p_value_log10_abs']) - \
-        np.array(experiment2['dominant_p_value_log10_abs'])
-    return np.power(np.power(enrich, 2) + np.power(p_val, 2), 0.5)
+    # Calculate the Euclidean distance
+    enrich_diff = enrich1 - enrich2
+    p_val_diff = p_val1 - p_val2
+    distances = np.sqrt(np.power(enrich_diff, 2) + np.power(p_val_diff, 2))
+    
+    return distances
 
 
 def download_file_to_resource(url: str, resource_name: str) -> None:

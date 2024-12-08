@@ -9,7 +9,7 @@ class Score:
     ----------
     sequence : str
         A string representing a validation of aminoacids
-    ranking : pandas.DataFrame
+    ranking : list of pandas.DataFrame
         containing scores, log2(scores) and percentiles for each kinase
     median_percentile : int
         Median value of all percentile scores for a validation
