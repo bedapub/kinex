@@ -1,19 +1,13 @@
 import bisect
 from collections import namedtuple
 from functools import reduce
-import tomli
 
 import numpy as np
 import pandas as pd
 
 from kinex.enrichment import Enrichment
 from kinex.functions import download_file_to_resource
-from kinex.resources import (
-    get_pssm_ser_thr,
-    get_pssm_tyr,
-    get_scoring_matrix_ser_thr,
-    get_scoring_matrix_tyr,
-)
+from kinex.resources import get_pssm_ser_thr, get_pssm_tyr, get_scoring_matrix_ser_thr, get_scoring_matrix_tyr, get_configuration_file
 from kinex.score import Score
 from kinex.enrichment import Enrichment
 from kinex.sequence import get_sequence_object, SequenceType
@@ -23,8 +17,7 @@ EnrichmentResults = namedtuple("EnrichmentResults", ["ser_thr", "tyr", "failed_s
 
 
 # Load the pyproject.toml file
-with open("pyproject.toml", "rb") as f:
-    config = tomli.load(f)
+config = get_configuration_file()
 
 
 class Kinex:
@@ -99,21 +92,15 @@ class Kinex:
             scoring_matrix_ser_thr = get_scoring_matrix_ser_thr()
             # Matrix is not provided and not found in the resources, download the default matrix
             if scoring_matrix_ser_thr is None:
-                scoring_matrix_ser_thr_url = config["project"]["urls"][
-                    "scoring_matrix_ser_thr"
-                ]
-                download_file_to_resource(
-                    scoring_matrix_ser_thr_url, "default_scoring_matrix_ser_thr.csv.gz"
-                )
+                scoring_matrix_ser_thr_url = config["urls"]["scoring_matrix_ser_thr"]
+                download_file_to_resource(scoring_matrix_ser_thr_url, 'default_scoring_matrix_ser_thr.csv.gz')
                 scoring_matrix_ser_thr = get_scoring_matrix_ser_thr()
 
         if scoring_matrix_tyr is None:
             scoring_matrix_tyr = get_scoring_matrix_tyr()
             if scoring_matrix_tyr is None:
-                scoring_matrix_tyr_url = config["project"]["urls"]["scoring_matrix_tyr"]
-                download_file_to_resource(
-                    scoring_matrix_tyr_url, "default_scoring_matrix_tyr.csv.gz"
-                )
+                scoring_matrix_tyr_url = config["urls"]["scoring_matrix_tyr"]
+                download_file_to_resource(scoring_matrix_tyr_url, 'default_scoring_matrix_tyr.csv.gz')
                 scoring_matrix_tyr = get_scoring_matrix_tyr()
 
         self.pssm_ser_thr = pssm_ser_thr
